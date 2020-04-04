@@ -9,13 +9,15 @@ FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 READ1_STR="_R1"
 READ2_STR="_R2"
 
-usageHelp="Usage: ${0##*/} [-d TOP_DIR]"
+usageHelp="Usage: ${0##*/} [-d TOP_DIR] -jh"
 dirHelp="* [TOP_DIR] is the top level directory (default\n  \"$TOP_DIR\")\n     [TOP_DIR]/fastq must contain the fastq files"
+indexHelp="-j produce index file for aligned files"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
     echo -e "$usageHelp"
     echo -e "$dirHelp"
+    echo -e "$indexHelp"
     echo "$helpHelp"
     exit "$1"
 }
@@ -24,6 +26,7 @@ while getopts "d:h" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
+	j) produceIndex=1 ;;
 	[?]) printHelpAndExit 1;;
     esac
 done
@@ -58,13 +61,13 @@ do
     # these names have to be right or it'll break                                                                            
     name1=${name}${READ1_STR}
     name2=${name}${READ2_STR}
-    read1files+=$name1$ext","
-    read2files+=$name2$ext","
+    read1filescomma+=$name1$ext","
+    read2filescomma+=$name2$ext","
 done
 
 # replace commas with spaces for iteration, put in array
-read1files=($(echo $read1files | tr ',' ' '))
-read2files=($(echo $read2files | tr ',' ' '))
+read1files=($(echo $read1filescomma | tr ',' ' '))
+read2files=($(echo $read2filescomma | tr ',' ' '))
 
 threads=8
 threadstring="-t \$SLURM_JOB_CPUS_PER_NODE"
@@ -72,11 +75,11 @@ threadstring="-t \$SLURM_JOB_CPUS_PER_NODE"
 for REFERENCE in $BETACORONA_REF_DIR
 do
 
-    ######################################################################                                                           
-    ######################################################################                                                           
-    ##########Step #1: Align                                                                                                         
-    ######################################################################                                                           
-    ######################################################################         
+    ######################################################################
+    ######################################################################
+    ##########Step #1: Align 
+    ######################################################################
+    ######################################################################
 
     REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
     echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
@@ -99,7 +102,7 @@ do
 	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p commons
-		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/align-%j.out                                                                               
+		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/align-%j.out
 		#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/align-%j.err
 		#SBATCH -t 2880
 		#SBATCH -n 1
@@ -112,12 +115,12 @@ do
 		bwa 2>&1 | awk '\\\$1=="Version:"{printf(" BWA %s; ", \\\$2)}' 
 		echo "Running command bwa mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE"
 		srun --ntasks=1 bwa mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE
-		if [ \$? -ne 0 ]                                                                                         
-		then                                                                                                     
-			touch $errorfile                                                                                 
-			exit 1                                                                                           
+		if [ \$? -ne 0 ]                      
+		then  
+			touch $errorfile            
+			exit 1                                         
 		else  
-			echo "(-: Mem align of $name$ext.sam done successfully"                                          
+			echo "(-: Mem align of $name$ext.sam done successfully"             
 		fi
 ALGNR`
 	dependalign="afterok:$jid"
@@ -169,7 +172,10 @@ SORTSAM`
 MERGESAM`
 
     dependmerge="afterok:$jid"
-    jid=`sbatch <<- INDEXSAM | egrep -o -e "\b[0-9]+$"
+
+    if [ -n "$produceIndex" ]
+    then
+	jid=`sbatch <<- INDEXSAM | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH -p commons
 	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/indexsam-%j.out
@@ -184,6 +190,7 @@ MERGESAM`
 	samtools index ${TOP_DIR}/${REFERENCE_NAME}_aligned/sorted_merged.bam
 
 INDEXSAM`
+    fi
 
     dependstats="afterok"
     jid=`sbatch <<- SAMSTATS | egrep -o -e "\b[0-9]+$"
@@ -205,7 +212,6 @@ SAMSTATS`
     dependstats="${dependstats}:$jid"
 done
 
-
 echo "#!/bin/bash -l" > $TOP_DIR/collect_stats.sh
 echo "#SBATCH -p commons" >> $TOP_DIR/collect_stats.sh
 echo "#SBATCH -o ${TOP_DIR}/collectstats-%j.out"  >> $TOP_DIR/collect_stats.sh
@@ -223,5 +229,58 @@ echo "	done "  >> $TOP_DIR/collect_stats.sh
 echo "echo \"</table>\" >> $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
 
 sbatch < $TOP_DIR/collect_stats.sh
+
+######################################################################
+######################################################################
+##########Step #4: Produce contigs - can happen in parallel
+######################################################################
+######################################################################
+
+jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
+	#!/bin/bash -l
+	#SBATCH -p x86
+	#SBATCH -o ${TOP_DIR}/contig-%j.out
+	#SBATCH -e ${TOP_DIR}/contig-%j.err
+	#SBATCH -t 600
+	#SBATCH -n 1 
+	#SBATCH -c 1
+	#SBATCH --mem=4000
+	#SBATCH --threads-per-core=1 
+
+	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contig.fasta
+CONTIG`
+
+# need to wait for alignment, though this is waiting on all alignments
+# and on sort instead of waiting on just the alignments we need
+dependcontig="$dependsort:$jid"
+
+######################################################################
+######################################################################
+##########Step #5: Dot plot - after contig and alignment
+######################################################################
+######################################################################
+
+jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
+	#!/bin/bash -l
+	#SBATCH --partition=dragen2
+	#SBATCH -o ${TOP_DIR}/contig-%j.out
+	#SBATCH -e ${TOP_DIR}/contig-%j.err
+	#SBATCH -t 600
+	#SBATCH -n 1 
+	#SBATCH -c 2
+	#SBATCH --mem=2000
+	#SBATCH --threads-per-core=1 
+	#SBATCH -d $dependcontig
+
+	export PATH=$PATH:/gpfs0/biobuild/x86/biobuilds-2017.11/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
+	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contig.fasta > ${TOP_DIR}/contig_nCoV-2019.paf
+	conda activate /home/joshua.theisen/cov_py3_x86_64
+pafCoordsDotPlotly.R \
+   --input "${TOP_DIR}/contig_nCoV-2019.paf" \
+   --output "${TOP_DIR}/contig_nCoV-2019.plot" \
+   --min-alignment-length 200 \
+   --min-query-length 2000 \
+   -s -t -l -p 4
+DOTPLOT`
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
