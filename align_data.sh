@@ -272,15 +272,18 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
 
-	export PATH=$PATH:/gpfs0/biobuild/x86/biobuilds-2017.11/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
-	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contig.fasta > ${TOP_DIR}/contig_nCoV-2019.paf
+	
+	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contig.fasta/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
+	
+	export PATH=$PATH:export PATH=$PATH:/gpfs0/apps/x86/anaconda3/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
 	conda activate /home/joshua.theisen/cov_py3_x86_64
-pafCoordsDotPlotly.R \
+	pafCoordsDotPlotly.R \
    --input "${TOP_DIR}/contig_nCoV-2019.paf" \
    --output "${TOP_DIR}/contig_nCoV-2019.plot" \
    --min-alignment-length 200 \
    --min-query-length 2000 \
    -s -t -l -p 4
+   
 DOTPLOT`
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
