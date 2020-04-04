@@ -220,10 +220,8 @@ echo "echo \"<table>\" > $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
 echo "for f in $TOP_DIR/*_aligned/stats.txt; do"  >> $TOP_DIR/collect_stats.sh
 echo  "awk -v fname=\${f%%_aligned*} '\$4==\"mapped\"{split(\$5,a,\"(\"); print \"<tr><td> \"fname\" </td>\", \"<td> \"a[2]\" </td></tr>\"}' \$f >> ${TOP_DIR}/stats.html"  >> $TOP_DIR/collect_stats.sh 
 echo "	done "  >> $TOP_DIR/collect_stats.sh
-echo "echo \"</table>\" > $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
+echo "echo \"</table>\" >> $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
 
 sbatch < $TOP_DIR/collect_stats.sh
-
-rm $TOP_DIR/collect_stats.sh
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
