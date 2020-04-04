@@ -12,19 +12,20 @@ READ2_STR="_R2"
 
 usageHelp="Usage: ${0##*/} [-d TOP_DIR] -jrh"
 dirHelp="* [TOP_DIR] is the top level directory (default\n  \"$TOP_DIR\")\n     [TOP_DIR]/fastq must contain the fastq files"
-indexHelp="-j produce index file for aligned files"
-reducedSet="-r reduced set for alignment"
+indexHelp="* -j produce index file for aligned files"
+reducedSet="* -r reduced set for alignment"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
     echo -e "$usageHelp"
     echo -e "$dirHelp"
     echo -e "$indexHelp"
+    echo -e "$reducedSet"
     echo "$helpHelp"
     exit "$1"
 }
 
-while getopts "d:h" opt; do
+while getopts "d:hr" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
