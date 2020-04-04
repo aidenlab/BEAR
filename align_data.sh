@@ -107,7 +107,7 @@ do
 		#SBATCH -t 2880
 		#SBATCH -n 1
 		#SBATCH -c $threads
-		#SBATCH --mem=4000
+		#SBATCH --mem-per-cpu=10G
                 #SBATCH -J "align_${FILE}"
 		#SBATCH --threads-per-core=1
 
@@ -138,7 +138,7 @@ ALGNR`
 		#SBATCH -t 2880 
 		#SBATCH -n 1
 		#SBATCH -c 8
-		#SBATCH --mem-per-cpu=4G
+		#SBATCH --mem-per-cpu=10G
 		#SBATCH --threads-per-core=1
 		#SBATCH -d $dependalign 
 		samtools sort -m 4G -@ 8 $ALIGNED_FILE -o ${ALIGNED_FILE}"_sorted.bam"
@@ -160,7 +160,7 @@ SORTSAM`
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
-	#SBATCH --mem=4000
+	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependsort
 
@@ -183,7 +183,7 @@ MERGESAM`
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
-	#SBATCH --mem=4000
+	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependmerge
 
@@ -201,7 +201,7 @@ INDEXSAM`
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
-	#SBATCH --mem=4000
+	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependmerge
 
@@ -244,7 +244,7 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH -t 600
 	#SBATCH -n 1 
 	#SBATCH -c 1
-	#SBATCH --mem=4000
+	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1 
 
 	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contig.fasta
@@ -268,7 +268,7 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH -t 600
 	#SBATCH -n 1 
 	#SBATCH -c 2
-	#SBATCH --mem=2000
+	#SBATCH --mem-per-cpu=2G
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
 
