@@ -5,13 +5,15 @@
 # Variables: do we want to be able to set betacorona ref dir?
 TOP_DIR=$(pwd)
 BETACORONA_REF_DIR="/gpfs0/work/brian/references/betacoronaviruses/*/*.fasta"
+BETACORONA_SMALL="/gpfs0/work/brian/references/betacoronaviruses/wuhan*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/sars*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/human_coronavirus*/*.fasta"
 FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 READ1_STR="_R1"
 READ2_STR="_R2"
 
-usageHelp="Usage: ${0##*/} [-d TOP_DIR] -jh"
+usageHelp="Usage: ${0##*/} [-d TOP_DIR] -jrh"
 dirHelp="* [TOP_DIR] is the top level directory (default\n  \"$TOP_DIR\")\n     [TOP_DIR]/fastq must contain the fastq files"
 indexHelp="-j produce index file for aligned files"
+reducedSet="-r reduced set for alignment"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
@@ -27,6 +29,7 @@ while getopts "d:h" opt; do
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
 	j) produceIndex=1 ;;
+	r) reducedSet=1 ;;
 	[?]) printHelpAndExit 1;;
     esac
 done
@@ -72,7 +75,14 @@ read2files=($(echo $read2filescomma | tr ',' ' '))
 threads=8
 threadstring="-t \$SLURM_JOB_CPUS_PER_NODE"
 
-for REFERENCE in $BETACORONA_REF_DIR
+if [ -n "$reducedSet" ]
+then
+    REFERENCES=$BETACORONA_SMALL
+else
+    REFERENCES=$BETACORONA_REF_DIR
+fi
+
+for REFERENCE in $REFERENCES
 do
 
     ######################################################################
@@ -247,7 +257,8 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1 
 
-	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contig.fasta
+	echo "Running /gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs"
+	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs
 CONTIG`
 
 # need to wait for alignment, though this is waiting on all alignments
@@ -263,19 +274,18 @@ dependcontig="$dependsort:$jid"
 jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH --partition=dragen2
-	#SBATCH -o ${TOP_DIR}/contig-%j.out
-	#SBATCH -e ${TOP_DIR}/contig-%j.err
+	#SBATCH -o ${TOP_DIR}/dotplot-%j.out
+	#SBATCH -e ${TOP_DIR}/dotplot-%j.err
 	#SBATCH -t 600
 	#SBATCH -n 1 
 	#SBATCH -c 2
 	#SBATCH --mem-per-cpu=2G
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
-
 	
-	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contig.fasta/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
+	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contigs/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
 	
-	export PATH=$PATH:export PATH=$PATH:/gpfs0/apps/x86/anaconda3/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
+	export PATH=$PATH:/gpfs0/apps/x86/anaconda3/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
 	conda activate /home/joshua.theisen/cov_py3_x86_64
 	pafCoordsDotPlotly.R \
    --input "${TOP_DIR}/contig_nCoV-2019.paf" \
