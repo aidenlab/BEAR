@@ -94,9 +94,10 @@ do
     REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
     echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
 
-    if ! mkdir ${TOP_DIR}/${REFERENCE_NAME}_aligned; then echo "***! Unable to create ${TOP_DIR}/${REFERENCE_NAME}_aligned! Exiting"; exit 1; fi
-    if ! mkdir ${TOP_DIR}/${REFERENCE_NAME}_debug; then echo "***! Unable to create ${TOP_DIR}/${REFERENCE_NAME}_debug! Exiting"; exit 1; fi
-    errorfile=${REFERENCE_NAME}_debug/alignerror
+    if ! mkdir ${TOP_DIR}/${REFERENCE_NAME}; then echo "***! Unable to create ${TOP_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
+    if ! mkdir ${TOP_DIR}/${REFERENCE_NAME}/aligned; then echo "***! Unable to create ${TOP_DIR}/${REFERENCE_NAME}_aligned! Exiting"; exit 1; fi
+    if ! mkdir ${TOP_DIR}/${REFERENCE_NAME}/debug; then echo "***! Unable to create ${TOP_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
+    errorfile=${REFERENCE_NAME}/debug/alignerror
 
     for ((i = 0; i < ${#read1files[@]}; ++i)); do
         usegzip=0
@@ -104,7 +105,7 @@ do
         file2=${read2files[$i]}
 
 	FILE=$(basename ${file1%$read1str})
-	ALIGNED_FILE=${TOP_DIR}/${REFERENCE_NAME}_aligned/${FILE}"_mapped.sam"
+	ALIGNED_FILE=${TOP_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped.sam"
 
 	dependsort="afterok"
 
@@ -112,8 +113,8 @@ do
 	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p commons
-		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/align-%j.out
-		#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/align-%j.err
+		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}/debug/align-%j.out
+		#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}/debug/align-%j.err
 		#SBATCH -t 2880
 		#SBATCH -n 1
 		#SBATCH -c $threads
@@ -143,8 +144,8 @@ ALGNR`
 	jid=`sbatch <<- SORTSAM | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p commons
-		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/sortsam-%j.out
-		#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/sortsam-%j.err
+		#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}/debug/sortsam-%j.out
+		#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}/debug/sortsam-%j.err
 		#SBATCH -t 2880 
 		#SBATCH -n 1
 		#SBATCH -c 8
@@ -165,8 +166,8 @@ SORTSAM`
     jid=`sbatch <<- MERGESAM | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH -p commons
-	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/mergesam-%j.out
-	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/mergesam-%j.err
+	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}/debug/mergesam-%j.out
+	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}/debug/mergesam-%j.err
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
@@ -174,10 +175,10 @@ SORTSAM`
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependsort
 
-	if samtools merge ${TOP_DIR}/${REFERENCE_NAME}_aligned/sorted_merged.bam ${TOP_DIR}/${REFERENCE_NAME}_aligned/*_sorted.bam
+	if samtools merge ${TOP_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${TOP_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
 	then
-		rm ${TOP_DIR}/${REFERENCE_NAME}_aligned/*_sorted.bam
-		rm ${TOP_DIR}/${REFERENCE_NAME}_aligned/*.sam
+		rm ${TOP_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
+		rm ${TOP_DIR}/${REFERENCE_NAME}/aligned/*.sam
 	fi
 MERGESAM`
 
@@ -188,8 +189,8 @@ MERGESAM`
 	jid=`sbatch <<- INDEXSAM | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH -p commons
-	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/indexsam-%j.out
-	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/indexsam-%j.err
+	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}/debug/indexsam-%j.out
+	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}/debug/indexsam-%j.err
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
@@ -197,7 +198,7 @@ MERGESAM`
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependmerge
 
-	samtools index ${TOP_DIR}/${REFERENCE_NAME}_aligned/sorted_merged.bam
+	samtools index ${TOP_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 
 INDEXSAM`
     fi
@@ -206,8 +207,8 @@ INDEXSAM`
     jid=`sbatch <<- SAMSTATS | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH -p commons
-	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}_debug/samstats-%j.out
-	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}_debug/samstats-%j.err
+	#SBATCH -o ${TOP_DIR}/${REFERENCE_NAME}/debug/samstats-%j.out
+	#SBATCH -e ${TOP_DIR}/${REFERENCE_NAME}/debug/samstats-%j.err
 	#SBATCH -t 2880 
 	#SBATCH -n 1 
 	#SBATCH -c 1
@@ -215,7 +216,7 @@ INDEXSAM`
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependmerge
 
-	samtools flagstat ${TOP_DIR}/${REFERENCE_NAME}_aligned/sorted_merged.bam > ${TOP_DIR}/${REFERENCE_NAME}_aligned/stats.txt
+	samtools flagstat ${TOP_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam > ${TOP_DIR}/${REFERENCE_NAME}/aligned/stats.txt
 
 SAMSTATS`
 
@@ -233,8 +234,8 @@ echo "#SBATCH --mem=200" >> $TOP_DIR/collect_stats.sh
 echo "#SBATCH --threads-per-core=1 " >> $TOP_DIR/collect_stats.sh
 echo "#SBATCH -d $dependstats"  >> $TOP_DIR/collect_stats.sh 
 echo "echo \"<table>\" > $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
-echo "for f in $TOP_DIR/*_aligned/stats.txt; do"  >> $TOP_DIR/collect_stats.sh
-echo  "awk -v fname=\${f%%_aligned*} '\$4==\"mapped\"{split(\$5,a,\"(\"); print \"<tr><td> \"fname\" </td>\", \"<td> \"a[2]\" </td></tr>\"}' \$f >> ${TOP_DIR}/stats.html"  >> $TOP_DIR/collect_stats.sh 
+echo "for f in $TOP_DIR/*/aligned/stats.txt; do"  >> $TOP_DIR/collect_stats.sh
+echo  "awk -v fname=\${f%%aligned*} '\$4==\"mapped\"{split(\$5,a,\"(\"); print \"<tr><td> \"fname\" </td>\", \"<td> \"a[2]\" </td></tr>\"}' \$f >> ${TOP_DIR}/stats.html"  >> $TOP_DIR/collect_stats.sh 
 echo "	done "  >> $TOP_DIR/collect_stats.sh
 echo "echo \"</table>\" >> $TOP_DIR/stats.html " >> $TOP_DIR/collect_stats.sh
 
