@@ -5,6 +5,12 @@ import csv, math, argparse
 
 
 def fill_blanks(f_txt, max_length):
+	'''Fills in histogram blanks.
+
+	Inputs: f_txt- .txt file string with position read counts
+			max_length- int length of genome
+	Outputs: filled- np array with 0s filled in
+	'''
 	raw = np.loadtxt(f_txt)
 	max_length = int(np.max(raw[:,0]))
 
@@ -16,6 +22,14 @@ def fill_blanks(f_txt, max_length):
 
 
 def make_hist(data, max_length, bin_size):
+	'''Makes a histogram from position read counts
+
+	Inputs: data- np array of filled in posiiton read counts
+			max_length- int length of genome
+			bin_size- int size of bin
+	Outputs: bin_pos- list of locations for histogram bars on x axis
+			bin_counts- list of counts per bin
+	'''
 	bins = np.arange(1, max_length+bin_size, bin_size)
 	digitized = np.digitize(data[:,0], bins)
 	bin_counts = [data[digitized == i,1].sum() for i in range(1, len(bins))]
@@ -25,8 +39,17 @@ def make_hist(data, max_length, bin_size):
 
 
 def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
+	'''Plots coverage track on top of dot plot. Writes a .png and .svg
 
-	fig, axs = plt.subplots(2, 1, sharex=True, sharey=False, figsize=(9,10), gridspec_kw={'height_ratios': [1, 9]})
+	Inputs: f_paf- string of .paf file for dot plot
+			max_length- int length of genome
+			bin_pos- list of locations for histogram bars on x axis
+			bin_counts- list of counts per bin
+			write_file- string name of file to write plots to
+	'''
+
+	fig, axs = plt.subplots(2, 1, sharex=True, sharey=False, figsize=(9,10), 
+		gridspec_kw={'height_ratios': [1, 9]})
 	sns.set_style("ticks", {'xtick.direction': 'in',
 		'ytick.direction': 'in'})
 
@@ -37,7 +60,8 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
 			col_fract = float(row[9])/float(row[10])
 			col_idx = int(math.ceil(col_fract*len(line_palette)))-1
 			col = line_palette[col_idx]
-			axs[1].plot([float(row[7]), float(row[8])], [float(row[2])+offset, float(row[3])+offset], linewidth=2, color=col)
+			axs[1].plot([float(row[7]), float(row[8])], [float(row[2])+offset, 
+				float(row[3])+offset], linewidth=2, color=col)
 			offset += float(row[1])
 	
 	axs[1].set_xlim((0, max_length))
@@ -67,6 +91,14 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
 	
 
 def main(f_txt, f_paf, max_length, bin_size, write_file):
+	'''Reads .txt + .paf file, plots coverage track + dot plot, writes to file
+
+	Inputs: f_txt- .txt file string to read for histogram
+			f_paf- .paf file string to read for dot plot
+			max_length- int length of viral genome
+			bin_size- int bin size to use for histogram
+			write_file- string name of file to write plots to
+	'''
 	filled = fill_blanks(f_txt, max_length)
 	bin_pos, bin_counts = make_hist(filled, max_length, bin_size)
 	plot(f_paf, max_length, bin_pos, bin_counts, write_file)
@@ -98,6 +130,7 @@ if __name__ == "__main__":
                      help='Genome length')
     
 	args = parser.parse_args()
-	main(args.read_txt_file, args.read_paf_file, args.max_length, args.bin_size, args.write_file)
+	main(args.read_txt_file, args.read_paf_file, args.max_length, args.bin_size,
+		args.write_file)
 	
 
