@@ -8,6 +8,13 @@ from io import BytesIO
 import pdfkit 
 
 
+width_of_bars=500
+bar_color = "#3498DB"
+line_palette = ['#FFEB3B', "#4CAF50", "#1B5E20"]
+x_labels = "SARS-COV2 RefSeq Assembly"
+y_labels = "De Novo SARS-COV2 Assembly"
+
+
 def fill_blanks(f_txt, max_length):
 	'''Fills in histogram blanks.
 
@@ -140,13 +147,6 @@ if __name__ == "__main__":
 	Example usage:
 	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903 stats.html stats.pdf
 	'''
-	
-	width_of_bars=500
-	bar_color = "#3498DB"
-	line_palette = ['#FFEB3B', "#4CAF50", "#1B5E20"]
-	x_labels = "SARS-COV2 RefSeq Assembly"
-	y_labels = "De Novo SARS-COV2 Assembly"
-	
 	parser = argparse.ArgumentParser(description='Plot histogram.')
 	parser.add_argument('read_txt_file', metavar='f_txt', type=str, 
                      help='.txt file to read')
