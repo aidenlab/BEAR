@@ -1,9 +1,11 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
-#import seaborn as sns
 import csv, math, argparse
 import base64
 from io import BytesIO
+import pdfkit 
 
 
 def fill_blanks(f_txt, max_length):
@@ -48,12 +50,12 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
 			bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
 			write_file- string name of file to write plots to
+
+	Output: fig- matplotlib fig of coverage track over dot plot
 	'''
 
 	fig, axs = plt.subplots(2, 1, sharex=True, sharey=False, figsize=(9,10), 
 		gridspec_kw={'height_ratios': [1, 9]})
-	#sns.set_style("ticks", {'xtick.direction': 'in',
-	#	'ytick.direction': 'in'})
 
 	offset = 0
 	with open(f_paf) as f:
@@ -94,38 +96,49 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
         orientation='portrait', papertype=None, format=None,
         transparent=False, bbox_inches=None, pad_inches=0.01,
         frameon=False, metadata=None)
+	return fig
 
+
+def html_to_pdf(fig, html_file, pdf_file):
+	'''Opens html file, appends plots, converts to pdf.
+
+	Inputs: fig- matplotlib fig of coverage track over dot plot
+			html_file- string name of html file to append plot to
+			pdf_file- strang name of pdf file to convert html to
 	'''
 	tmpfile = BytesIO()
-	#fig.savefig(tmpfile, format='png')
+	fig.savefig(tmpfile, format='png')
 	encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
+	html = '<img src=\'data:image/png;base64,{}\'>'.format(encoded)
 
-	html = 'Some html head' + '<img src=\'data:image/png;base64,{}\'>'.format(encoded) + 'Some more html'
+	with open(html_file,'a') as f:
+		f.write(html)
 
-	with open('test.html','w') as f:
-    	f.write(html)
-	'''
-	plt.show()
+	pdfkit.from_file(html_file, pdf_file)
 	
 
-def main(f_txt, f_paf, max_length, bin_size, write_file):
-	'''Reads .txt + .paf file, plots coverage track + dot plot, writes to file
+def main(f_txt, f_paf, max_length, bin_size, write_file, html_file, pdf_file):
+	'''Reads .txt + .paf file, plots coverage track + dot plot, writes plots to file
+	Then, opens html page, puts in plots, converts to pdf
 
 	Inputs: f_txt- .txt file string to read for histogram
 			f_paf- .paf file string to read for dot plot
 			max_length- int length of viral genome
 			bin_size- int bin size to use for histogram
 			write_file- string name of file to write plots to
+			html_file- string name of html file to append plot to
+			pdf_file- strang name of pdf file to convert html to
 	'''
 	filled = fill_blanks(f_txt, max_length)
 	bin_pos, bin_counts = make_hist(filled, max_length, bin_size)
-	plot(f_paf, max_length, bin_pos, bin_counts, write_file)
+	fig = plot(f_paf, max_length, bin_pos, bin_counts, write_file)
+	html_to_pdf(fig, html_file, pdf_file)
 
 
 if __name__ == "__main__":
 	'''
 	Example usage:
-	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903
+	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903 stats.html stats.pdf
 	'''
 	
 	width_of_bars=500
@@ -146,9 +159,14 @@ if __name__ == "__main__":
                      help='Histogram bin size')
 	parser.add_argument('max_length', metavar='m', type=int,
                      help='Genome length')
+
+	parser.add_argument('read_html_file', metavar='f_html', type=str, 
+                     help='.html file to add plot to')
+	parser.add_argument('write_pdf_file', metavar='wf_html', type=str, 
+                     help='.pdf file to write html to')
     
 	args = parser.parse_args()
 	main(args.read_txt_file, args.read_paf_file, args.max_length, args.bin_size,
-		args.write_file)
+		args.write_file, args.read_html_file, args.write_pdf_file)
 	
 
