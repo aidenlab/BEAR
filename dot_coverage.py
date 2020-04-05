@@ -1,0 +1,103 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import csv, math, argparse
+
+
+def fill_blanks(f_txt, max_length):
+	raw = np.loadtxt(f_txt)
+	max_length = int(np.max(raw[:,0]))
+
+	filled = np.zeros((max_length, 2))
+	filled[:,0] = np.arange(1, max_length+1)
+	filled[np.isin(filled[:,0], raw[:,0]),1] = raw[:,1]
+
+	return filled
+
+
+def make_hist(data, max_length, bin_size):
+	bins = np.arange(1, max_length+bin_size, bin_size)
+	digitized = np.digitize(data[:,0], bins)
+	bin_counts = [data[digitized == i,1].sum() for i in range(1, len(bins))]
+	bin_pos = [(bins[i]+bins[i+1]-1)/2.0 for i in range(len(bins)-1)]
+	
+	return bin_pos, bin_counts
+
+
+def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
+
+	fig, axs = plt.subplots(2, 1, sharex=True, sharey=False, figsize=(9,10), gridspec_kw={'height_ratios': [1, 9]})
+	sns.set_style("ticks", {'xtick.direction': 'in',
+		'ytick.direction': 'in'})
+
+	offset = 0
+	with open(f_paf) as f:
+		rd = csv.reader(f, delimiter="\t", quotechar='"')
+		for row in rd:
+			col_fract = float(row[9])/float(row[10])
+			col_idx = int(math.ceil(col_fract*len(line_palette)))-1
+			col = line_palette[col_idx]
+			axs[1].plot([float(row[7]), float(row[8])], [float(row[2])+offset, float(row[3])+offset], linewidth=2, color=col)
+			offset += float(row[1])
+	
+	axs[1].set_xlim((0, max_length))
+	axs[1].set_ylim((0, offset))
+
+	axs[1].set_xlabel(x_labels)
+	axs[1].set_ylabel(y_labels)
+
+	axs[0].bar(bin_pos, bin_counts, width=width_of_bars, color=bar_color)
+
+	axs[0].yaxis.set_major_locator(plt.MaxNLocator(2))
+	axs[1].yaxis.set_major_locator(plt.MaxNLocator(4))
+	axs[1].xaxis.set_major_locator(plt.MaxNLocator(4))
+	fig.tight_layout()
+	
+	plt.savefig(write_file+'.svg',
+				dpi=None, facecolor='w', edgecolor='w',
+		        orientation='portrait', papertype=None, format=None,
+		        transparent=False, bbox_inches=None, pad_inches=0.01,
+		        frameon=False, metadata=None)
+	plt.savefig(write_file+'.png',
+		dpi=None, facecolor='w', edgecolor='w',
+        orientation='portrait', papertype=None, format=None,
+        transparent=False, bbox_inches=None, pad_inches=0.01,
+        frameon=False, metadata=None)
+	plt.show()
+	
+
+def main(f_txt, f_paf, max_length, bin_size, write_file):
+	filled = fill_blanks(f_txt, max_length)
+	bin_pos, bin_counts = make_hist(filled, max_length, bin_size)
+	plot(f_paf, max_length, bin_pos, bin_counts, write_file)
+
+
+if __name__ == "__main__":
+	'''
+	Example usage:
+	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903
+	'''
+	
+	width_of_bars=500
+	bar_color = "#3498DB"
+	line_palette = ['#FFEB3B', "#4CAF50", "#1B5E20"]
+	x_labels = "SARS-COV2 RefSeq Assembly"
+	y_labels = "De Novo SARS-COV2 Assembly"
+	
+	parser = argparse.ArgumentParser(description='Plot histogram.')
+	parser.add_argument('read_txt_file', metavar='f_txt', type=str, 
+                     help='.txt file to read')
+	parser.add_argument('read_paf_file', metavar='f_paf', type=str, 
+                     help='.paf file to read')
+	
+	parser.add_argument('write_file', metavar='wf', type=str, 
+                     help='png/svg files to write')
+	parser.add_argument('bin_size', metavar='b', type=int, 
+                     help='Histogram bin size')
+	parser.add_argument('max_length', metavar='m', type=int,
+                     help='Genome length')
+    
+	args = parser.parse_args()
+	main(args.read_txt_file, args.read_paf_file, args.max_length, args.bin_size, args.write_file)
+	
+
