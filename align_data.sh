@@ -261,6 +261,8 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 
 	echo "Running /gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs"
 	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs
+
+	mv contig-* contigs/
 CONTIG`
 
 # need to wait for alignment, though this is waiting on all alignments
