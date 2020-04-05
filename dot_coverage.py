@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+#import seaborn as sns
 import csv, math, argparse
+import base64
+from io import BytesIO
 
 
 def fill_blanks(f_txt, max_length):
@@ -50,8 +52,8 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
 
 	fig, axs = plt.subplots(2, 1, sharex=True, sharey=False, figsize=(9,10), 
 		gridspec_kw={'height_ratios': [1, 9]})
-	sns.set_style("ticks", {'xtick.direction': 'in',
-		'ytick.direction': 'in'})
+	#sns.set_style("ticks", {'xtick.direction': 'in',
+	#	'ytick.direction': 'in'})
 
 	offset = 0
 	with open(f_paf) as f:
@@ -87,6 +89,22 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
         orientation='portrait', papertype=None, format=None,
         transparent=False, bbox_inches=None, pad_inches=0.01,
         frameon=False, metadata=None)
+	plt.savefig(write_file+'.pdf',
+		dpi=None, facecolor='w', edgecolor='w',
+        orientation='portrait', papertype=None, format=None,
+        transparent=False, bbox_inches=None, pad_inches=0.01,
+        frameon=False, metadata=None)
+
+	'''
+	tmpfile = BytesIO()
+	#fig.savefig(tmpfile, format='png')
+	encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
+
+	html = 'Some html head' + '<img src=\'data:image/png;base64,{}\'>'.format(encoded) + 'Some more html'
+
+	with open('test.html','w') as f:
+    	f.write(html)
+	'''
 	plt.show()
 	
 
