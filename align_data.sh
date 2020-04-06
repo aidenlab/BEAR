@@ -287,16 +287,12 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
 	
-	minimap2 -x asm5 /gpfs0/work/joshua.theisen/projects/covid/reference.genomes/nCoV-2019.reference.fasta ${TOP_DIR}/contigs/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
+	samtools depth severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/sorted_merged.bam | awk '{print $2 $3}' > severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt
+
+	minimap2 -x asm5 $SAR_COV2_REF ${TOP_DIR}/contigs/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
 	
-	export PATH=$PATH:/gpfs0/apps/x86/anaconda3/bin:/gpfs0/work/joshua.theisen/applications/dotplotly.git
-	conda activate /home/joshua.theisen/cov_py3_x86_64
-	pafCoordsDotPlotly.R \
-   --input "${TOP_DIR}/contig_nCoV-2019.paf" \
-   --output "${TOP_DIR}/contig_nCoV-2019.plot" \
-   --min-alignment-length 200 \
-   --min-query-length 2000 \
-   -s -t -l -p 4
+	/gpfs0/apps/x86/anaconda2/bin/python2.7 ../COVID19/dot_coverage.py severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt ${TOP_DIR}/contig_nCoV-2019.paf dotplot 500 29867
+
    
 DOTPLOT`
 
