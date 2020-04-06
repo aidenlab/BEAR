@@ -1,11 +1,21 @@
 #!/bin/bash
-### Script to align sample to viral genomes
-### Eventually will do entire pipline
+##### 
+### Pipeline script for COVID19 diagnostic
+### Given paired end sequencing of putative viral data
+###   -> Aligns to a selection of potential viruses, sorts and merges
+###   -> In parallel, assembles the data into contigs
+###   -> After alignment, runs flagstat aligned data to create stats.html
+###   -> After contigging, creates dotplot to add to stats.html
+###   -> Final report created as PDF from stats.html
+#####
 
-# Variables: do we want to be able to set betacorona ref dir?
+# Variables: could add option to explicitly set pipeline script dir and ref dir
 TOP_DIR=$(pwd)
-BETACORONA_REF_DIR="/gpfs0/work/brian/references/betacoronaviruses/*/*.fasta"
-BETACORONA_SMALL="/gpfs0/work/brian/references/betacoronaviruses/wuhan*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/sars*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/*.fasta"
+PIPELINE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BETACORONA_REF_DIR="${PIPELINE_DIR}/betacoronaviruses/*/*.fasta"
+# Currently the ref dir only holds 4; possibly we don't need reduced set option
+#BETACORONA_SMALL="/gpfs0/work/brian/references/betacoronaviruses/wuhan*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/sars*/*.fasta "
+# We assume the files exist in a fastq directory
 FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 READ1_STR="_R1"
 READ2_STR="_R2"
