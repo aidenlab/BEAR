@@ -262,7 +262,8 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH -n 1 
 	#SBATCH -c 1
 	#SBATCH --mem-per-cpu=10G
-	#SBATCH --threads-per-core=1 
+	#SBATCH --threads-per-core=1
+	#SBATCH -d $dependmerge
 
 	echo "Running /gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs"
 	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs
@@ -292,9 +293,9 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
 	
-	minimap2 -x asm5 /gpfs0/work/brian/references/betacoronaviruses/severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/*.fasta ${TOP_DIR}/contigs/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
+	minimap2 -x asm5 /gpfs0/work/brian/references/betacoronaviruses/severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/*.fasta ${TOP_DIR}/contigs/final.contigs.fa > ${TOP_DIR}/contig_nCoV-2019.paf
 	
-	/gpfs0/apps/x86/anaconda3/bin/python ../COVID19/dot_coverage.py severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt ${TOP_DIR}/contig_nCoV-2019.paf dotplot 500 29867
+	/gpfs0/apps/x86/anaconda3/bin/python ../COVID19/dot_coverage.py severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt ${TOP_DIR}/contig_nCoV-2019.paf dotplot 500 29867 stats.html stats.pdf False
 
    
 DOTPLOT`
