@@ -23,11 +23,10 @@ def fill_blanks(f_txt, max_length):
 	Outputs: filled- np array with 0s filled in
 	'''
 	raw = np.loadtxt(f_txt)
-	max_length = int(np.max(raw[:,0]))
 
 	filled = np.zeros((max_length, 2))
 	filled[:,0] = np.arange(1, max_length+1)
-	filled[np.isin(filled[:,0], raw[:,0]),1] = raw[:,1]
+	filled[np.isin(filled[:,0], raw[:,1]),1] = raw[:,2]
 
 	return filled
 
