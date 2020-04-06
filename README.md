@@ -1,2 +1,2 @@
-# COVID19
-Pipeline for Aiden Lab COVID19 diagnostic
+# Polar pipeline
+Pipeline for Polar, the Aiden Lab viral diagnostic for SARS-CoV2.
