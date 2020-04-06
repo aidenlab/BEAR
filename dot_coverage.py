@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import csv, math, argparse
 import base64
 from io import BytesIO
-import pdfkit 
-
+ 
 
 width_of_bars=500
 bar_color = "#3498DB"
@@ -126,6 +125,7 @@ def html_to_pdf(html_file, pdf_file):
 	Inputs: html_file- string name of html file to append plot to
 			pdf_file- strang name of pdf file to convert html to
 	'''
+	import pdfkit
 	pdfkit.from_file(html_file, pdf_file)
 	
 
