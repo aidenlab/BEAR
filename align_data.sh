@@ -5,7 +5,7 @@
 # Variables: do we want to be able to set betacorona ref dir?
 TOP_DIR=$(pwd)
 BETACORONA_REF_DIR="/gpfs0/work/brian/references/betacoronaviruses/*/*.fasta"
-BETACORONA_SMALL="/gpfs0/work/brian/references/betacoronaviruses/wuhan*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/sars*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/human_coronavirus*/*.fasta"
+BETACORONA_SMALL="/gpfs0/work/brian/references/betacoronaviruses/wuhan*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/sars*/*.fasta /gpfs0/work/brian/references/betacoronaviruses/severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/*.fasta"
 FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 READ1_STR="_R1"
 READ2_STR="_R2"
@@ -262,7 +262,8 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH -n 1 
 	#SBATCH -c 1
 	#SBATCH --mem-per-cpu=10G
-	#SBATCH --threads-per-core=1 
+	#SBATCH --threads-per-core=1
+	#SBATCH -d $dependmerge
 
 	echo "Running /gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs"
 	/gpfs0/work/brian/scripts/MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit -1 $read1filescomma -2 $read2filescomma -o ${TOP_DIR}/contigs
@@ -282,7 +283,7 @@ dependcontig="$dependsort:$jid"
 
 jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
-	#SBATCH --partition=dragen2
+	#SBATCH --partition=x86
 	#SBATCH -o ${TOP_DIR}/dotplot-%j.out
 	#SBATCH -e ${TOP_DIR}/dotplot-%j.err
 	#SBATCH -t 600
@@ -292,9 +293,9 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH --threads-per-core=1 
 	#SBATCH -d $dependcontig
 	
-	minimap2 -x asm5 $SAR_COV2_REF ${TOP_DIR}/contigs/final.contigs.fa  > ${TOP_DIR}/contig_nCoV-2019.paf
+	minimap2 -x asm5 /gpfs0/work/brian/references/betacoronaviruses/severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/*.fasta ${TOP_DIR}/contigs/final.contigs.fa > ${TOP_DIR}/contig_nCoV-2019.paf
 	
-	/gpfs0/apps/x86/anaconda2/bin/python2.7 ../COVID19/dot_coverage.py severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt ${TOP_DIR}/contig_nCoV-2019.paf dotplot 500 29867
+	/gpfs0/apps/x86/anaconda3/bin/python ../COVID19/dot_coverage.py severe_acute_respiratory_syndrome_coronavirus_2_strain_USA_WA1/aligned/depth_per_base.txt ${TOP_DIR}/contig_nCoV-2019.paf dotplot 500 29867 stats.html stats.pdf False
 
    
 DOTPLOT`
