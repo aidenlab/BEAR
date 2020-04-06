@@ -23,12 +23,12 @@ def fill_blanks(f_txt, max_length):
 	Outputs: filled- np array with 0s filled in
 	'''
 	#raw = np.loadtxt(f_txt)
-	raw = pd.read_csv(f_txt, sep=" ", names=['first', 'second', 'third'], header=None)
-
+	raw = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
 	raw_np_array = np.zeros((len(raw),2))
+	
 	raw_np_array[:,0] = raw['second'].values
 	raw_np_array[:,1] = raw['third'].values
-
+	
 	filled = np.zeros((max_length, 2))
 	filled[:,0] = np.arange(1, max_length+1)
 	filled[np.isin(filled[:,0], raw_np_array[:,0]),1] = raw_np_array[:,1]
