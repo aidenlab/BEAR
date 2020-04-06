@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import csv, math, argparse
 import base64
 from io import BytesIO
+import pandas as pd
  
 
 width_of_bars=500
@@ -21,11 +22,16 @@ def fill_blanks(f_txt, max_length):
 			max_length- int length of genome
 	Outputs: filled- np array with 0s filled in
 	'''
-	raw = np.loadtxt(f_txt)
+	#raw = np.loadtxt(f_txt)
+	raw = pd.read_csv(f_txt, sep=" ", names=['first', 'second', 'third'], header=None)
+
+	raw_np_array = np.zeros((len(raw),2))
+	raw_np_array[:,0] = raw['second'].values
+	raw_np_array[:,1] = raw['third'].values
 
 	filled = np.zeros((max_length, 2))
 	filled[:,0] = np.arange(1, max_length+1)
-	filled[np.isin(filled[:,0], raw[:,1]),1] = raw[:,2]
+	filled[np.isin(filled[:,0], raw_np_array[:,0]),1] = raw_np_array[:,1]
 
 	return filled
 
