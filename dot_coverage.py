@@ -106,12 +106,11 @@ def plot(f_paf, max_length, bin_pos, bin_counts, write_file):
 	return fig
 
 
-def html_to_pdf(fig, html_file, pdf_file):
-	'''Opens html file, appends plots, converts to pdf.
+def append_html(fig, html_file):
+	'''Opens html file, appends plots.
 
 	Inputs: fig- matplotlib fig of coverage track over dot plot
 			html_file- string name of html file to append plot to
-			pdf_file- strang name of pdf file to convert html to
 	'''
 	tmpfile = BytesIO()
 	fig.savefig(tmpfile, format='png')
@@ -121,12 +120,20 @@ def html_to_pdf(fig, html_file, pdf_file):
 	with open(html_file,'a') as f:
 		f.write(html)
 
+
+def html_to_pdf(html_file, pdf_file):
+	'''Converts html to pdf.
+
+	Inputs: html_file- string name of html file to append plot to
+			pdf_file- strang name of pdf file to convert html to
+	'''
 	pdfkit.from_file(html_file, pdf_file)
 	
 
-def main(f_txt, f_paf, max_length, bin_size, write_file, html_file, pdf_file):
+def main(f_txt, f_paf, max_length, bin_size, write_file, html_file, pdf_file, 
+	convert_to_pdf):
 	'''Reads .txt + .paf file, plots coverage track + dot plot, writes plots to file
-	Then, opens html page, puts in plots, converts to pdf
+	Opens html file, appends plots, converts to pdf if convert_to_pdf is True
 
 	Inputs: f_txt- .txt file string to read for histogram
 			f_paf- .paf file string to read for dot plot
@@ -139,34 +146,42 @@ def main(f_txt, f_paf, max_length, bin_size, write_file, html_file, pdf_file):
 	filled = fill_blanks(f_txt, max_length)
 	bin_pos, bin_counts = make_hist(filled, max_length, bin_size)
 	fig = plot(f_paf, max_length, bin_pos, bin_counts, write_file)
-	html_to_pdf(fig, html_file, pdf_file)
+	
+	append_html(fig, html_file)
+
+	if convert_to_pdf == "convert":
+		html_to_pdf(html_file, pdf_file)
+
 
 
 if __name__ == "__main__":
 	'''
 	Example usage:
-	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903 stats.html stats.pdf
+	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903 stats.html stats.pdf convert
 	'''
 	parser = argparse.ArgumentParser(description='Plot histogram.')
-	parser.add_argument('read_txt_file', metavar='f_txt', type=str, 
+	parser.add_argument('read_txt_file', metavar='f_txt', type=str,
                      help='.txt file to read')
-	parser.add_argument('read_paf_file', metavar='f_paf', type=str, 
+	parser.add_argument('read_paf_file', metavar='f_paf', type=str,
                      help='.paf file to read')
 	
-	parser.add_argument('write_file', metavar='wf', type=str, 
+	parser.add_argument('write_file', metavar='wf', type=str,
                      help='png/svg files to write')
-	parser.add_argument('bin_size', metavar='b', type=int, 
+	parser.add_argument('bin_size', metavar='b', type=int,
                      help='Histogram bin size')
-	parser.add_argument('max_length', metavar='m', type=int,
+	parser.add_argument('max_length', metavar='m', type=int, 
                      help='Genome length')
 
-	parser.add_argument('read_html_file', metavar='f_html', type=str, 
+	parser.add_argument('read_html_file', metavar='f_html', type=str,
                      help='.html file to add plot to')
-	parser.add_argument('write_pdf_file', metavar='wf_html', type=str, 
+	parser.add_argument('write_pdf_file', metavar='wf_html', type=str,
                      help='.pdf file to write html to')
+
+	parser.add_argument('convert_to_pdf', metavar='pdf_bool', type=str, 
+                     help='do we convert to pdf')
     
 	args = parser.parse_args()
 	main(args.read_txt_file, args.read_paf_file, args.max_length, args.bin_size,
-		args.write_file, args.read_html_file, args.write_pdf_file)
+		args.write_file, args.read_html_file, args.write_pdf_file, args.convert_to_pdf)
 	
 
