@@ -159,9 +159,9 @@ if __name__ == "__main__":
 	python dot_coverage.py out.txt harder.paf /plots/covid_plots 500 29903 stats.html stats.pdf convert
 	'''
 	parser = argparse.ArgumentParser(description='Plot histogram.')
-	parser.add_argument('read_txt_file', metavar='f_txt', type=str,
+	parser.add_argument('read_txt_file', metavar='rf_txt', type=str,
                      help='.txt file to read')
-	parser.add_argument('read_paf_file', metavar='f_paf', type=str,
+	parser.add_argument('read_paf_file', metavar='rf_paf', type=str,
                      help='.paf file to read')
 	
 	parser.add_argument('write_file', metavar='wf', type=str,
@@ -171,9 +171,9 @@ if __name__ == "__main__":
 	parser.add_argument('max_length', metavar='m', type=int, 
                      help='Genome length')
 
-	parser.add_argument('read_html_file', metavar='f_html', type=str,
+	parser.add_argument('read_html_file', metavar='rf_html', type=str,
                      help='.html file to add plot to')
-	parser.add_argument('write_pdf_file', metavar='wf_html', type=str,
+	parser.add_argument('write_pdf_file', metavar='wf_pdf', type=str,
                      help='.pdf file to write html to')
 
 	parser.add_argument('convert_to_pdf', metavar='pdf_bool', type=str, 
