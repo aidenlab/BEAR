@@ -51,7 +51,14 @@ def make_hist(data, x_length):
 	
 	return bin_pos, bin_counts
 
+
 def thicker_spines(ax, all_spines):
+	'''Makes spines of axes thicker.
+
+	Inputs: ax- matplot axis object
+			all_spines- boolean, do we change all spines?
+	Outputs: ax- matplot axis object
+	'''
 	spine_thickness = 2
 	if all_spines:
 		ax.spines['right'].set_linewidth(spine_thickness)
@@ -101,15 +108,15 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 
 	Inputs: ax_coverage- coverage track axis
 			ax_dot- dot plot axis
+			filled- np array data for coverage track
 			dot_data- np array data for dot plot
-			max_length- int length of genome
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
 			bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
 	Outputs: ax_coverage- coverage track axis
 			ax_dot- dot plot axis
 	'''
-	
-	
 	dot_data = dot_data.sort_values('7')
 	dot_data['cum_offset'] = dot_data['1'].cumsum()
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
@@ -133,11 +140,8 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 	ax_coverage.stackplot(filled[:,0], filled[:,1], color=bar_color, linewidth=.01)
 	#ax_coverage.bar(bin_pos, bin_counts, width=width_of_bars, color=bar_color)
 
-	#ax_coverage.yaxis.set_major_locator(plt.MaxNLocator(2))
-	#ax_coverage.xaxis.set_major_locator(plt.MaxNLocator(4))
-
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
-	t = [int(0), int(math.ceil(coverage_max))]#+10000]
+	t = [int(0), int(math.ceil(coverage_max))]
 	ax_coverage.set_yticks(t)
 	ax_coverage.set_yticklabels(t)
 
@@ -160,13 +164,14 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file):
 	'''Plots coverage track on top of dot plot. Writes .pdf
 
-	Inputs: dot_data- np array data for dot plot
+	Inputs: filled- np array data for coverage track
+			dot_data- np array data for dot plot
 			f_csv- string of .csv file for alignment plot
-			max_length- int length of genome
 			bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
-			
 	Output: fig- matplotlib fig of coverage track, dot plot, alignment plot
 	'''
 
@@ -177,8 +182,7 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 		bin_pos, bin_counts)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
 
-	fig.subplots_adjust(hspace=0.04, wspace = 0.05)
-	#fig.tight_layout(pad=0.0)	
+	fig.subplots_adjust(hspace=0.04, wspace = 0.05)	
 	plt.savefig(write_file+'.pdf',
 		dpi=None, facecolor='w', edgecolor='w',
         orientation='portrait', papertype=None, format=None,
@@ -193,6 +197,8 @@ def main(f_txt, dot_data, f_csv, x_length, y_length, write_file):
 	Inputs: f_txt- .txt file string to read for histogram
 			dot_data- np array data for dot plot
 			f_csv- for alignment bar graph
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
 	'''
 	filled = fill_blanks(f_txt, x_length)
