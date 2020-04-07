@@ -54,7 +54,7 @@ dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
   [TOP_DIR]/fastq must contain the fastq files"
 threadsHelp="* [THREADS] is the number of threads for BWA alignment"
 indexHelp="* -j produce index file for aligned files"
-reducedSet="* -r reduced set for alignment"
+reducedHelp="* -r reduced set for alignment"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
@@ -62,7 +62,7 @@ printHelpAndExit() {
     echo -e "$dirHelp"
     echo -e "$threadsHelp"
     echo -e "$indexHelp"
-    echo -e "$reducedSet"
+    echo -e "$reducedHelp"
     echo "$helpHelp"
     exit "$1"
 }
