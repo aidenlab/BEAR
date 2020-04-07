@@ -8,8 +8,9 @@ from io import BytesIO
 import pandas as pd
 import itertools
  
-bin_size = 5
-width_of_bars = 4
+bin_size = 1
+num_bins = 30000.0/bin_size
+width_of_bars = 100000.0/num_bins
 bar_color = "#1565C0"
 line_palette = ['#FFEB3B', "#4CAF50", "#1B5E20"]
 x_labels = "SARS-COV2 RefSeq Assembly"
@@ -65,6 +66,7 @@ def thicker_spines(ax, all_spines):
 		ax.spines['top'].set_linewidth(spine_thickness)
 	ax.spines['left'].set_linewidth(spine_thickness)
 	ax.spines['bottom'].set_linewidth(spine_thickness)
+	
 	return ax
 
 
@@ -79,7 +81,13 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 			ax_align- alignment bar graph axis
 	'''
 	align_data = pd.read_csv(f_csv)
-	ax_align.barh(align_data['label'], align_data['percentage'], color="#D2B4DE")
+	name_key = pd.read_csv('name_changes.csv')
+	align_data = align_data.merge(name_key, how="left")
+	align_data = align_data.sort_values('percentage')
+
+	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color='#D2B4DE', legend=False)
+	ax_align.set_ylabel('Alignment %')
+	ax_align.set_ylabel('')
 	ax_align.set_xlim(0,100)
 	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
 	plt.setp(ax_align.get_yticklabels(), ha="left")
@@ -137,8 +145,10 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 	ax_dot.set_xlabel(x_labels)
 	ax_dot.set_ylabel(y_labels)
 
-	ax_coverage.stackplot(filled[:,0], filled[:,1], color=bar_color, linewidth=.01)
-	#ax_coverage.bar(bin_pos, bin_counts, width=width_of_bars, color=bar_color)
+	if bin_size == 1:
+		ax_coverage.stackplot(filled[:,0], filled[:,1], color=bar_color, linewidth=.01)
+	else:
+		ax_coverage.bar(bin_pos, bin_counts, width=width_of_bars, color=bar_color)
 
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
 	t = [int(0), int(math.ceil(coverage_max))]
@@ -152,6 +162,7 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 
 	ax_coverage.spines['right'].set_visible(False)
 	ax_coverage.spines['top'].set_visible(False)
+	ax_coverage.spines['left'].set_bounds(t[0], t[1])
 
 	ax_coverage = thicker_spines(ax_coverage, False)
 	ax_dot = thicker_spines(ax_dot, True)
@@ -175,8 +186,8 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 	Output: fig- matplotlib fig of coverage track, dot plot, alignment plot
 	'''
 
-	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(15,10), 
-		gridspec_kw={'height_ratios': [1, 9], 'width_ratios':[9, 6]})
+	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(14.75,10), 
+		gridspec_kw={'height_ratios': [1, 9], 'width_ratios':[9, 5.75]})
 
 	axs[0][0], axs[1][0] = plot_dot_plot(axs[0][0], axs[1][0], filled, dot_data, x_length, y_length,
 		bin_pos, bin_counts)
@@ -188,6 +199,7 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
         orientation='portrait', papertype=None, format=None,
         transparent=False, bbox_inches=None, pad_inches=0.01,
         frameon=False, metadata=None)
+
 	return fig
 
 
