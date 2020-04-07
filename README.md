@@ -83,7 +83,15 @@ The fastqs can be zipped or unzipped, and there can be multiple pairs.
 The pipeline will create folders "work", "log", and "final" under "Library1".
 The "final" folder will contain the assembly fasta and the PDF report. 
 
-## Options
+## Usage and options
+```
+Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jrh
+* [TOP_DIR] is the top level directory (default "/Users/nchernia/gits/Polar")
+  [TOP_DIR]/fastq must contain the fastq files
+* -j produce index file for aligned files
+* -r reduced set for alignment
+* -h: print this help and exit
+```
 
 For debugging, you can have the pipeline create indices of the aligned bam
 files; pass in the `-j` flag to enable this option.
