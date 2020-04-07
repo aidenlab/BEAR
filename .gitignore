@@ -11,3 +11,5 @@ stats1.pdf
 *.pdf
 *.pdf
 stats1.pdf
+make_list.py
+stats.csv
