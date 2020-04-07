@@ -1,5 +1,5 @@
 # Polar pipeline
-
+![Protocol image](images/polar_protocol.png)
 Pipeline for Polar, the Aiden Lab viral diagnostic for SARS-CoV2.
 
 Polar can be run on a SLURM cluster or on a single machine.
