@@ -86,7 +86,7 @@ The "final" folder will contain the assembly fasta and the PDF report.
 ## Usage and options
 ```
 Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jrh
-* [TOP_DIR] is the top level directory (default "/Users/nchernia/gits/Polar")
+* [TOP_DIR] is the top level directory (default $(pwd))
   [TOP_DIR]/fastq must contain the fastq files
 * -j produce index file for aligned files
 * -r reduced set for alignment
