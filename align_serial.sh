@@ -13,7 +13,7 @@
 ### REQUIRED SOFTWARE 
 ## You must have the following software installed
 ## and available in your PATH
-## BWA; Samtools; Megahit; Python
+## BWA; Samtools; Minimap2; Megahit; Python
 
 ## Threads
 threads=1
@@ -59,6 +59,14 @@ while getopts "d:t:hr" opt; do
     esac
 done
 
+# Check for installed software
+command -v bwa >/dev/null 2>&1 || { echo >&2 "!*** BWA required but it's not installed."; exit 1; }
+command -v samtools >/dev/null 2>&1 || { echo >&2 "!*** Samtools required but it's not installed."; exit 1; }
+command -v minimap2 >/dev/null 2>&1 || { echo >&2 "!*** Minimap2 required but it's not installed."; exit 1; }
+command -v megahit >/dev/null 2>&1 || { echo >&2 "!*** Megahit required but it's not installed."; exit 1; }
+command -v python >/dev/null 2>&1 || { echo >&2 "!*** Python required but it's not installed."; exit 1; }
+
+# Check for fastq files
 if [ ! -d "$TOP_DIR/fastq" ]; then
     echo "Directory \"$TOP_DIR/fastq\" does not exist."
     echo "Create \"$TOP_DIR/fastq\" and put fastq files to be aligned there."
@@ -171,11 +179,17 @@ do
 done
 
 # Produce contigs - this can happen concurrently with alignment
-megahit -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs
+megahit -1 $read1filescomma -2 $read2filescomma -m 750 -o ${WORK_DIR}/contigs
 mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
+CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print $2}')
 
 # Dot plot - after contig and alignment
-minimap2-x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
+minimap2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig_${matchname}.paf
+if [ ! -s "${WORK_DIR}/contig_${matchname}.paf" ]
+then
+    echo "!*** Pairwise alignment by minimap2 failed."
+    exit 1
+fi
 samtools rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
 samtools depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf dotplot 500 29867 ${WORK_DIR}/stats.csv ${FINAL_DIR}/stats.pdf False
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report.pdf
