@@ -175,7 +175,7 @@ done
 echo "label,percentage" > ${WORK_DIR}/stats.csv
 for f in ${WORK_DIR}/*/aligned/stats.txt
 do
-    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{OFS=","}$4=="mapped"{split($5, a, "("); print fname, a[2]}' $f >> ${WORK_DIR}/stats.csv
+    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{OFS=","}$4=="mapped"{split($5, a, "("); split(a[2],b, "%"); print fname, b[1]}' $f >> ${WORK_DIR}/stats.csv
 done
 
 # Produce contigs - this can happen concurrently with alignment
@@ -192,4 +192,4 @@ then
 fi
 samtools rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
 samtools depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report.pdf
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report

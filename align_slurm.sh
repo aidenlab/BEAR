@@ -285,7 +285,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -d $dependstats"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/stats.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); print fname, a[2]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); split(a[2],b, \"%\"); print fname, b[1]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 sbatch < "$WORK_DIR"/collect_stats.sh
@@ -349,7 +349,7 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 
 	CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print \$2}')
 
-	$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report.pdf
+	$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report
 DOTPLOT`
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
