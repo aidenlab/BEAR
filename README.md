@@ -61,6 +61,24 @@ Custom Python code creates a dotplot showing the quality of the de novo
 assembly to the match viral genome (SARS-CoV-2), depth of coverage, and
 bar plots indicating the mapping percentage of the reads to the database of related viral genomes.
 
+## Usage and options
+```
+Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jrh
+* [TOP_DIR] is the top level directory (default $(pwd))
+  [TOP_DIR]/fastq must contain the fastq files
+* -j produce index file for aligned files
+* -r reduced set for alignment
+* -h: print this help and exit
+```
+
+For debugging, you can have the pipeline create indices of the aligned bam
+files; pass in the `-j` flag to enable this option.
+
+For quicker processing, you can choose to align to a reduced set that includes
+only the "match" and "close" genomes; pass in the `-r` flag to enable this option.
+
+Send in the number of threads you wish to use for BWA alignment via `-t threads`.
+
 ## Repository
 
 The Polar code can be found at https://github.com/aidenlab/Polar.git
@@ -82,24 +100,6 @@ The fastqs can be zipped or unzipped, and there can be multiple pairs.
 
 The pipeline will create folders "work", "log", and "final" under "Library1".
 The "final" folder will contain the assembly fasta and the PDF report. 
-
-## Usage and options
-```
-Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jrh
-* [TOP_DIR] is the top level directory (default $(pwd))
-  [TOP_DIR]/fastq must contain the fastq files
-* -j produce index file for aligned files
-* -r reduced set for alignment
-* -h: print this help and exit
-```
-
-For debugging, you can have the pipeline create indices of the aligned bam
-files; pass in the `-j` flag to enable this option.
-
-For quicker processing, you can choose to align to a reduced set that includes
-only the "match" and "close" genomes; pass in the `-r` flag to enable this option.
-
-Send in the number of threads you wish to use for BWA alignment via `-t threads`.
 
 ## SLURM variables
 
