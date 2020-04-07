@@ -64,6 +64,7 @@ bar plots indicating the mapping percentage of the reads to the database of rela
 ## Repository
 
 The Polar code can be found at https://github.com/aidenlab/Polar.git
+
 The repository contains the viral genomes to test against in the folder
 `betacoronaviruses`. The subfolder `match` contains the viral genome
 we are testing against (currently SARS-CoV-2). The subfolder `close`
