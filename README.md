@@ -1,7 +1,7 @@
-# Polar pipeline
+# Pipeline for pipeline, the Aiden Lab viral diagnostic for SARS-CoV2
 ![Protocol image](images/polar_protocol.png)
-Pipeline for Polar, the Aiden Lab viral diagnostic for SARS-CoV2.
 
+## Requirements
 Polar can be run on a SLURM cluster or on a single machine.
 In either case, you must install the following required software:
 
@@ -50,10 +50,46 @@ and creates as output a PDF with the result of the test for the virus
 (positive or negative). The PDF also includes other qualitative and 
 quantitative measures, detailed below.
 
+![Pipeline image](images/polar_pipeline.png)
+
+The pipeline first aligns the reads to a database of betacoronaviruses 
+(performed in parallel on SLURM). Separately, it creates contigs from the
+reads. This contigged assembly is then pairwise aligned to SARS-CoV-2.
+
+Mapping statistics and coverage data are gathered after alignment is complete.
+Custom Python code creates a dotplot showing the quality of the de novo
+assembly to the match viral genome (SARS-CoV-2), depth of coverage, and
+bar plots indicating the mapping percentage of the reads to the database of related viral genomes.
+
 ## Repository
 
 The Polar code can be found at https://github.com/aidenlab/Polar.git
 The repository contains the viral genomes to test against in the folder
-`betacoronaviruses`
+`betacoronaviruses`. The subfolder `match` contains the viral genome
+we are testing against (currently SARS-CoV-2). The subfolder `close`
+contains the genomes phylogentically most closely related to the `match`
+genome. The subfolder `far` contains other related genomes. 
+
+## Setup
+
+Place the paired end sequenced reads in a folder labeled `fastq`.
+For example, if your experiment is called "Library1", you should have
+a folder labeled "Library1" and it should contain one subfolder labeled
+"fastq" with the fastq files in it.
+
+The fastqs can be zipped or unzipped, and there can be multiple pairs.
+
+The pipeline will create folders "work", "log", and "final" under "Library1".
+The "final" folder will contain the assembly fasta and the PDF report. 
+
+## SLURM variables
+
+Systems vary in their resources but we have tried our best to make it 
+easy to modify the SLURM script to fit your system. Modify the variables
+at the top of the script to work with your system. For example, you can 
+modify "LOAD_BWA" so that it loads the appropriate module, or exports
+the appropriate path. You can also modify the call "BWA_CMD" to be the
+full path to the executable.
+
 
 
