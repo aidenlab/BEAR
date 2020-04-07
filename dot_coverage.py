@@ -278,10 +278,10 @@ def main(f_txt, f_paf, f_fa, f_csv, f_html, max_length, write_file, new_pdf,
 if __name__ == "__main__":
 	'''
 	Example usage:
-	python dot_coverage.py ".txt file" ".paf file" ".fa file" "destination for plots" "bin size" 
-		"genome length" "html stats" "new pdf" "pdf conversion?" "new tsv"
-	python dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf final.contigs.fa stats.csv stats.html 
-		29903 covid_plots stats.pdf new.tsv False 
+	python dot_coverage.py ".txt file for coverage" ".paf file for dot plot" ".fa file for dot plot" ".csv for alignment" 
+		".html destination" "int genome length" "destination for plots" "new pdf to write" "new tsv to write" "pdf conversion?"
+	python dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf final.contigs.fa stats.csv 
+		stats.html 29903 covid_plots stats.pdf new.tsv False 
 	'''
 	parser = argparse.ArgumentParser(description='Plot histogram.')
 	parser.add_argument('read_txt_file', metavar='rf_txt', type=str,
