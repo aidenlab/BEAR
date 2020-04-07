@@ -165,9 +165,9 @@ do
 		#SBATCH --threads-per-core=1
 
 		$LOAD_BWA
-		$BWA 2>&1 | awk '\\\$1=="Version:"{printf(" BWA %s; ", \\\$2)}'
-		echo "Running command $BWA mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE"
-		srun --ntasks=1 $BWA mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE
+		$BWA_CMD 2>&1 | awk '\\\$1=="Version:"{printf(" BWA %s; ", \\\$2)}'
+		echo "Running command $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE"
+		srun --ntasks=1 $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE
 		if [ \$? -ne 0 ]                      
 		then  
 			exit 1                                         
@@ -285,7 +285,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -d $dependstats"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/stats.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\${f%%aligned*} 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); print fname, a[2]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); print fname, a[2]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 sbatch < "$WORK_DIR"/collect_stats.sh
