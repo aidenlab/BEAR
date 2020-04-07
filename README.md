@@ -71,7 +71,7 @@ we are testing against (currently SARS-CoV-2). The subfolder `close`
 contains the genomes phylogentically most closely related to the `match`
 genome. The subfolder `far` contains other related genomes. 
 
-## Setup
+## Setup and output folders
 
 Place the paired end sequenced reads in a folder labeled `fastq`.
 For example, if your experiment is called "Library1", you should have
@@ -82,6 +82,16 @@ The fastqs can be zipped or unzipped, and there can be multiple pairs.
 
 The pipeline will create folders "work", "log", and "final" under "Library1".
 The "final" folder will contain the assembly fasta and the PDF report. 
+
+## Options
+
+For debugging, you can have the pipeline create indices of the aligned bam
+files; pass in the `-j` flag to enable this option.
+
+For quicker processing, you can choose to align to a reduced set that includes
+only the "match" and "close" genomes; pass in the `-r` flag to enable this option.
+
+Send in the number of threads you wish to use for BWA alignment via `-t threads`.
 
 ## SLURM variables
 
