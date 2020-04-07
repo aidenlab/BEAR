@@ -339,10 +339,17 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	$LOAD_MINIMAP2
 	$LOAD_SAMTOOLS
 	$MINIMAP2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
+	if [ -s ${FINAL_DIR}/contig_${matchname}.paf ]
+	then
+    		echo "!*** Pairwise alignment by minimap2 failed."
+		exit 1
+	fi
 	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
     	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
 
-	$PYTHON ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf dotplot 500 29867 ${WORK_DIR}/stats.csv ${FINAL_DIR}/stats.pdf False
+	CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print \$2}')
+
+	$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report.pdf
 DOTPLOT`
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
