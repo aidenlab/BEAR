@@ -339,7 +339,8 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	$LOAD_MINIMAP2
 	$LOAD_SAMTOOLS
 	$MINIMAP2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
-    	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam > ${TOP_DIR}/${matchname}/aligned/depth_per_base.txt	
+	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
+    	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
 
 	$PYTHON ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf dotplot 500 29867 ${WORK_DIR}/stats.csv ${FINAL_DIR}/stats.pdf False
 DOTPLOT`
