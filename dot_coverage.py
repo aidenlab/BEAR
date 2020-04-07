@@ -81,10 +81,12 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 			ax_align- alignment bar graph axis
 	'''
 	align_data = pd.read_csv(f_csv)
-	name_key = pd.read_csv('name_changes.csv')
-	align_data = align_data.merge(name_key, how="left")
+	#name_key = pd.read_csv('name_changes.csv')
+	#align_data = align_data.merge(name_key, how="left")
+	align_data['new'] = align_data['label'].str.replace('_',' ')
+	align_data['id'] = align_data['label'].str.lower()
 	align_data = align_data.sort_values('percentage')
-
+	
 	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color='#D2B4DE', legend=False)
 	ax_align.set_ylabel('Alignment %')
 	ax_align.set_ylabel('')
@@ -92,8 +94,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
 	plt.setp(ax_align.get_yticklabels(), ha="left")
 
-	covid_val = align_data[align_data['label']==
-		'wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1']['percentage'].values[0]
+	covid_val = align_data[align_data['id'].str.contains("wuhan")]['percentage'].values[0]
 	
 	ax_diagnostic.plot([.445, .555], [.5, .5], linewidth=20, color='black')
 	if covid_val >= 75:
