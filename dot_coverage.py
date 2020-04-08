@@ -7,14 +7,17 @@ import base64
 from io import BytesIO
 import pandas as pd
 import itertools
+from matplotlib import rcParams
+import matplotlib.ticker as mticker
+matplotlib.rcParams.update({'font.size': 10})
+
  
 bin_size = 1
 num_bins = 30000.0/bin_size
 width_of_bars = 100000.0/num_bins
-bar_color = "#1565C0"
-line_palette = ['#FFEB3B', "#4CAF50", "#1B5E20"]
 x_labels = "SARS-COV2 RefSeq Assembly"
 y_labels = "De Novo SARS-COV2 Assembly"
+col = "#D98880"
 
 
 def fill_blanks(f_txt, x_length):
@@ -84,11 +87,25 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	#name_key = pd.read_csv('name_changes.csv')
 	#align_data = align_data.merge(name_key, how="left")
 	align_data['new'] = align_data['label'].str.replace('_',' ')
+	align_data['new'] = align_data.new.str.title()
+
+
+	def new_labels(new_name, perc):
+		return "{}: {}%".format(new_name, perc)
+
+	#align_data['new'] = align_data['new'] align_data['percentage']
+	align_data['new'] = align_data.apply(lambda row : new_labels(row['new'], 
+							row['percentage']), axis = 1)
+
 	align_data['id'] = align_data['label'].str.lower()
 	align_data = align_data.sort_values('percentage')
+
+	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color=col, legend=False)
 	
-	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color='#D2B4DE', legend=False)
-	ax_align.set_ylabel('Alignment %')
+	#for i, v in enumerate(y):
+    #	align_data.text(v + 3, i + .25, str(v))
+
+	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses')
 	ax_align.set_ylabel('')
 	ax_align.set_xlim(0,100)
 	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
@@ -96,12 +113,16 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 
 	covid_val = align_data[align_data['id'].str.contains("wuhan")]['percentage'].values[0]
 	
-	ax_diagnostic.plot([.445, .555], [.5, .5], linewidth=20, color='black')
+	ax_diagnostic.plot([.245, .355], [.5, .5], linewidth=20, color=col)
 	if covid_val >= 75:
-		ax_diagnostic.plot([.5, .5], [.1, .9], linewidth=20, color='black')
-		ax_diagnostic.set_title("Positive",)
+		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
+		ax_diagnostic.set_title("Test Result: Positive")
+		ax_diagnostic.text(.4, .55, "SARS-COV2 was detected", color='black')
+		ax_diagnostic.text(.4, .35, "in the the sample", color='black')
 	else:
-		ax_diagnostic.set_title("Negative")
+		ax_diagnostic.set_title("Test Result: Negative")
+		ax_diagnostic.text(.4, .55, "SARS-COV2 was not detected", color='black')
+		ax_diagnostic.text(.4, .35, "in the the sample", color='black')
 	
 	ax_diagnostic.set_xlim(0,1)
 	ax_diagnostic.set_ylim(0,1)
@@ -130,40 +151,42 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 	dot_data['cum_offset'] = dot_data['1'].cumsum()
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
 
-	def dot_plot(x1, x2, y1, y2, segment_offset, num, denom):
-		col_fract = float(num)/float(denom)
-		col_idx = int(math.ceil(col_fract*len(line_palette)))-1
-		col = line_palette[col_idx]
+	def dot_plot(x1, x2, y1, y2, segment_offset,):
 		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
 
 	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
-                     row['2'], row['3'], row['upto_offset'], row['9'], row['10']), axis = 1)
+                     row['2'], row['3'], row['upto_offset']), axis = 1)
 
 	ax_coverage.set_xlim(0, x_length)
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
 
+	ax_coverage.set_ylabel("Coverage")
 	ax_dot.set_xlabel(x_labels)
 	ax_dot.set_ylabel(y_labels)
 
 	if bin_size == 1:
-		ax_coverage.stackplot(filled[:,0], filled[:,1], color=bar_color, linewidth=.01)
+		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
 	else:
-		ax_coverage.bar(bin_pos, bin_counts, width=width_of_bars, color=bar_color)
+		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
 
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
-	t = [int(0), int(math.ceil(coverage_max))]
-	ax_coverage.set_yticks(t)
-	ax_coverage.set_yticklabels(t)
-
+	t_coverage = [int(0), int(math.ceil(coverage_max/ 100.0)) * 100]
+	ax_coverage.set_yticks(t_coverage)
+	#ax_coverage.set_yticklabels(t_coverage)
 	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-	
-	ax_dot.yaxis.set_major_locator(plt.MaxNLocator(4))
-	ax_dot.xaxis.set_major_locator(plt.MaxNLocator(4))
+
+	def log_tick_formatter(val, pos=None):
+		return "10$^{"+str(int(math.log10(val)))+"}$"
+
+	t_loc = np.arange(0, max(x_length, y_length)+1, 10000)
+	t_names = [0, 1, 2, 3, 4]
+	ax_dot.set_xticks(t_loc)
+	ax_dot.set_yticks(t_loc)
 
 	ax_coverage.spines['right'].set_visible(False)
 	ax_coverage.spines['top'].set_visible(False)
-	ax_coverage.spines['left'].set_bounds(t[0], t[1])
+	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
 
 	ax_coverage = thicker_spines(ax_coverage, False)
 	ax_dot = thicker_spines(ax_dot, True)
@@ -187,8 +210,8 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 	Output: fig- matplotlib fig of coverage track, dot plot, alignment plot
 	'''
 
-	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(14.75,10), 
-		gridspec_kw={'height_ratios': [1, 9], 'width_ratios':[9, 5.75]})
+	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(17.75, 12), 
+		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 6.75]})
 
 	axs[0][0], axs[1][0] = plot_dot_plot(axs[0][0], axs[1][0], filled, dot_data, x_length, y_length,
 		bin_pos, bin_counts)
