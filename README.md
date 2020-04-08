@@ -8,7 +8,7 @@ In either case, you must install the following required software:
 * [BWA](https://github.com/lh3/bwa)
 * [Samtools](http://www.htslib.org/download)
 * [Minimap2](https://github.com/lh3/minimap2)
-* [Megahit](https://github.com/voutcn/megahit)
+* [MEGAHIT](https://github.com/voutcn/megahit)
 
 ## Single Machine Quick Start
 
