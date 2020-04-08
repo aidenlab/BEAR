@@ -1,4 +1,4 @@
-# Pipeline for Polar: viral diagnostic for SARS-CoV2
+# Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
 ## Requirements
