@@ -49,28 +49,33 @@ READ1_STR="_R1"
 READ2_STR="_R2"
 
 # Usage and commands
-usageHelp="Usage: ${0##*/} [-d TOP_DIR] -jrh"
+usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jrh"
 dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
   [TOP_DIR]/fastq must contain the fastq files"
+threadsHelp="* [THREADS] is the number of threads for BWA alignment"
 indexHelp="* -j produce index file for aligned files"
-reducedSet="* -r reduced set for alignment"
+reducedHelp="* -r reduced set for alignment"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
     echo -e "$usageHelp"
     echo -e "$dirHelp"
+    echo -e "$threadsHelp"
     echo -e "$indexHelp"
-    echo -e "$reducedSet"
+    echo -e "$reducedHelp"
     echo "$helpHelp"
     exit "$1"
 }
 
-while getopts "d:hr" opt; do
+while getopts "d:t:hr" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
 	j) produceIndex=1 ;;
 	r) reducedSet=1 ;;
+	t) threads=$OPTARG 
+	   threadstring="-t $threads"
+	   ;;
 	[?]) printHelpAndExit 1;;
     esac
 done
@@ -285,7 +290,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -d $dependstats"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/stats.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); print fname, a[2]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); split(a[2],b, \"%\"); print fname, b[1]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 sbatch < "$WORK_DIR"/collect_stats.sh
@@ -314,6 +319,9 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG`
 
+echo "CONTIG_LENGTH=\$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | cut -f2 -d' ')" > ${WORK_DIR}/call_dotplot.sh
+echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report" >> ${WORK_DIR}/call_dotplot.sh
+
 # need to wait for match alignment
 dependcontig="${dependmatchdone}:$jid"
 
@@ -326,8 +334,8 @@ dependcontig="${dependmatchdone}:$jid"
 jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH --partition=$QUEUE_X86
-	#SBATCH -o ${TOP_DIR}/dotplot-%j.out
-	#SBATCH -e ${TOP_DIR}/dotplot-%j.err
+	#SBATCH -o ${LOG_DIR}/dotplot-%j.out
+	#SBATCH -e ${LOG_DIR}/dotplot-%j.err
 	#SBATCH -t 600
 	#SBATCH -n 1 
 	#SBATCH -c 2
@@ -338,8 +346,8 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	$LOAD_PYTHON
 	$LOAD_MINIMAP2
 	$LOAD_SAMTOOLS
-	$MINIMAP2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
-	if [ -s ${FINAL_DIR}/contig_${matchname}.paf ]
+	$MINIMAP2_CMD -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
+	if [ ! -s ${FINAL_DIR}/contig_${matchname}.paf ]
 	then
     		echo "!*** Pairwise alignment by minimap2 failed."
 		exit 1
@@ -347,9 +355,9 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
     	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
 
-	CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print \$2}')
+	source ${WORK_DIR}/call_dotplot.sh
 
-	$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report.pdf
+
 DOTPLOT`
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
