@@ -15,9 +15,9 @@ matplotlib.rcParams.update({'font.size': 10})
 bin_size = 1
 num_bins = 30000.0/bin_size
 width_of_bars = 100000.0/num_bins
-x_labels = "SARS-COV2 RefSeq Assembly"
-y_labels = "De Novo SARS-COV2 Assembly"
-col = "#D98880"
+x_labels = "SARS-CoV-2 RefSeq Assembly"
+y_labels = "de novo SARS-CoV-2 Assembly"
+col = "#D98880d"
 
 
 def fill_blanks(f_txt, x_length):
