@@ -295,6 +295,8 @@ echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 sbatch < "$WORK_DIR"/collect_stats.sh
 
+dependcollectstats="afterok:$jid"
+
 ######################################################################
 ######################################################################
 ########## Produce contigs - can happen in parallel
@@ -327,6 +329,38 @@ dependcontig="${dependmatchdone}:$jid"
 
 ######################################################################
 ######################################################################
+########## Minimap2 - after contig and alignment
+######################################################################
+######################################################################
+
+jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
+	#!/bin/bash -l
+	#SBATCH --partition=$QUEUE
+	#SBATCH -o ${LOG_DIR}/pairwise-%j.out
+	#SBATCH -e ${LOG_DIR}/pairwise-%j.err
+	#SBATCH -t 600
+	#SBATCH -n 1 
+	#SBATCH -c 2
+	#SBATCH --mem-per-cpu=2G
+	#SBATCH --threads-per-core=1 
+	#SBATCH -d $dependcontig
+	
+	$LOAD_MINIMAP2
+	$LOAD_SAMTOOLS
+	$MINIMAP2_CMD -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
+	if [ ! -s ${FINAL_DIR}/contig_${matchname}.paf ]
+	then
+    		echo "!*** Pairwise alignment by minimap2 failed."
+		exit 1
+	fi
+	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
+    	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
+
+MINIMAP`
+dependcollectstats="${dependcollectstats}:$jid"
+
+######################################################################
+######################################################################
 ########## Dot plot - after contig and alignment
 ######################################################################
 ######################################################################
@@ -341,23 +375,11 @@ jid=`sbatch <<- DOTPLOT | egrep -o -e "\b[0-9]+$"
 	#SBATCH -c 2
 	#SBATCH --mem-per-cpu=2G
 	#SBATCH --threads-per-core=1 
-	#SBATCH -d $dependcontig
+	#SBATCH -d $dependcollectstats
 	
 	$LOAD_PYTHON
-	$LOAD_MINIMAP2
-	$LOAD_SAMTOOLS
-	$MINIMAP2_CMD -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
-	if [ ! -s ${FINAL_DIR}/contig_${matchname}.paf ]
-	then
-    		echo "!*** Pairwise alignment by minimap2 failed."
-		exit 1
-	fi
-	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
-    	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
-
 	source ${WORK_DIR}/call_dotplot.sh
-
-
 DOTPLOT`
+
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"
