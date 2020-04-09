@@ -335,7 +335,7 @@ dependcontig="${dependmatchdone}:$jid"
 
 jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
-	#SBATCH --partition=$QUEUE
+	#SBATCH --partition=$QUEUE_X86 
 	#SBATCH -o ${LOG_DIR}/pairwise-%j.out
 	#SBATCH -e ${LOG_DIR}/pairwise-%j.err
 	#SBATCH -t 600
