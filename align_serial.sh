@@ -121,7 +121,6 @@ if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"
 if ! mkdir "${LOG_DIR}"; then echo "***! Unable to create ${LOG_DIR}! Exiting"; exit 1; fi
 if ! mkdir "${FINAL_DIR}"; then echo "***! Unable to create ${FINAL_DIR}! Exiting"; exit 1; fi
 
-
 for REFERENCE in $REFERENCES
 do
     ######################################################################
@@ -143,14 +142,14 @@ do
 	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped.sam"
 
         # Align reads
-	bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE
+	bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
 
 	# Sort SAM and convert to BAM
-	samtools sort -@ $threads $ALIGNED_FILE -o ${ALIGNED_FILE}"_sorted.bam"
+	samtools sort -@ $threads $ALIGNED_FILE -o ${ALIGNED_FILE}"_sorted.bam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
     done
 
     # Merge sorted BAMs
-    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
+    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
     then
 	rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 
 	rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
@@ -165,13 +164,14 @@ do
     # In case you want to visualize the bams, index them. 
     if [ -n "$produceIndex" ]
     then
-	samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+	samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
     fi
 
     # Statistics (in particular percentage of mapped reads)
     samtools flagstat ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt 
 done
 
+echo "(-: Done with alignment" 
 # Gather alignment statistics (mapping %)
 echo "label,percentage" > ${WORK_DIR}/stats.csv
 for f in ${WORK_DIR}/*/aligned/stats.txt
@@ -180,17 +180,21 @@ do
 done
 
 # Produce contigs - this can happen concurrently with alignment
-megahit -1 $read1filescomma -2 $read2filescomma -m 750 -o ${WORK_DIR}/contigs
+megahit -1 $read1filescomma -2 $read2filescomma -m 750 -o ${WORK_DIR}/contigs &> ${LOG_DIR}/contig.out
 mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print $2}')
-
+echo "(-: Done with contigs" 
 # Dot plot - after contig and alignment
-minimap2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig_${matchname}.paf
+minimap2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig_${matchname}.paf 2> ${LOG_DIR}/minimap.out
 if [ ! -s "${WORK_DIR}/contig_${matchname}.paf" ]
 then
     echo "!*** Pairwise alignment by minimap2 failed."
     exit 1
 fi
-samtools rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
-samtools depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report
+echo "(-: Done with pairwise comparison" 
+samtools rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam &> ${LOG_DIR}/rmdup.out
+samtools depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt &> ${LOG_DIR}/coverage.out
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report  &> ${LOG_DIR}/dotplot.out
+
+echo "(-: Done with dotplot"
+echo "(-: Pipeline completed, check ${FINAL_DIR} for the report"

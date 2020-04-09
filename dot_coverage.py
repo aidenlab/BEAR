@@ -15,10 +15,11 @@ matplotlib.rcParams.update({'font.size': 10})
 bin_size = 1
 num_bins = 30000.0/bin_size
 width_of_bars = 100000.0/num_bins
-x_labels = "SARS-COV2 RefSeq Assembly"
-y_labels = "De Novo SARS-COV2 Assembly"
-col = "#D98880"
-
+x_labels = "SARS-CoV-2 RefSeq Assembly"
+y_labels = "de novo SARS-CoV-2 Assembly"
+# col = "#D98880d" ###pink
+col = "#80D1D9" ###blue
+ 
 
 def fill_blanks(f_txt, x_length):
 	'''Fills in histogram blanks.
@@ -98,8 +99,8 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
 		ax_diagnostic.set_title("Test Result: Positive")
-		ax_diagnostic.text(.4, .55, "SARS-COV2 was detected", color='black')
-		ax_diagnostic.text(.4, .35, "in the the sample", color='black')
+		ax_diagnostic.text(.4, .55, "SARS-CoV-2 was detected", color='black')
+		ax_diagnostic.text(.4, .35, "in the sample", color='black')
 	else:
 		ax_diagnostic.set_title("Test Result: Negative")
 		ax_diagnostic.text(.4, .55, "SARS-COV2 was not detected", color='black')
