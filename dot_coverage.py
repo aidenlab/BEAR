@@ -1,14 +1,8 @@
 import numpy as np
-import matplotlib
+import matplotlib, math, argparse
 matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
-import csv, math, argparse
-import base64
-from io import BytesIO
 import pandas as pd
-import itertools
-from matplotlib import rcParams
-import matplotlib.ticker as mticker
 matplotlib.rcParams.update({'font.size': 10})
 
  
