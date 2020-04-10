@@ -19,6 +19,43 @@ x_labels = "SARS-CoV-2 RefSeq Assembly"
 y_labels = "de novo SARS-CoV-2 Assembly"
 # col = "#D98880d" ###pink
 col = "#80D1D9" ###blue
+
+name_key = pd.DataFrame({ 
+	'label': ['bat_coronavirus_HKU4_1', 
+	'bat_coronavirus_HKU5_1',
+	'bat_coronavirus_HKU9_1', 
+	'bat_coronavirus_Parker', 
+	'bat_Hp_betacoronavirus_Zhejiang2013',
+	'betacoronavirus_England', 
+	'betacoronavirus_erinaceus', 
+	'betacoronavirus_HKU24_strain_HKU24_R05005I',
+	'bovine_coronavirus', 
+	'human_coronavirus_HKU1', 
+	'human_coronavirus_OC43_strain_ATCC_VR_759',
+	'middle_east_respiratory_syndrome_coronavirus', 
+	'mouse_hepatitis_virus_strain_MHV_A59_C12_mutant',
+	'rabbit_coronavirus_HKU14', 
+	'rousettus_bat_coronavirus_isolate_GCCDC1_356', 
+	'sars_coronavirus',
+	'wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1'], 
+	'new': ['Bat coronavirus HKU4-1', 
+	'Bat coronavirus HKU5-1', 
+	'Bat coronavirus HKU9-1', 
+	'Rat coronavirus Parker', 
+	'Bat Hp-betacoronavirus', 
+	'Betacoronavirus England 1', 
+	'Betacoronavirus isolate Erinaceus CoV, 2012', 
+	'Betacoronavirus HKU24 strain HKU24-R05005I', 
+	'Bovine coronavirus', 
+	'Human coronavirus HKU1', 
+	'Human coronavirus OC43 strain ATCC VR-759', 
+	'Middle East respiratory syndrome (MERS) coronavirus',
+	'Mouse hepatitis virus strain MHV-A59 C12 mutant',
+	'Rabbit coronavirus HKU14',
+	'Rousettus bat coronavirus isolate GCCDC1 356',
+	'Severe acute respiratory syndrome (SARS) coronavirus',
+	'SARS-CoV-2']
+	})
  
 
 def fill_blanks(f_txt, x_length):
@@ -86,13 +123,12 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	'''
 	#Read/format/sort alignment data
 	align_data = pd.read_csv(f_csv)
-	#name_key = pd.read_csv('name_changes.csv')
-	#align_data = align_data.merge(name_key, how="left")
-	align_data['new'] = align_data['label'].str.replace('_',' ')
-	align_data['new'] = align_data.new.str.title()
+	align_data = align_data.merge(name_key, how="left")
+	#align_data['new'] = align_data['label'].str.replace('_',' ')
+	#align_data['new'] = align_data.new.str.title()
 	align_data['id'] = align_data['label'].str.lower()
 	align_data = align_data.sort_values('percentage')
-	align_data.loc[align_data['id'].str.contains('wuhan'), 'new'] = 'SARS-CoV-2'
+	#align_data.loc[align_data['id'].str.contains('wuhan'), 'new'] = 'SARS-CoV-2'
 	
 	#Plot diagnostic symbol
 	ax_diagnostic.plot([.245, .355], [.5, .5], linewidth=20, color=col)

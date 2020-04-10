@@ -25,11 +25,6 @@ BETACORONA_REF_DIR="${PIPELINE_DIR}/betacoronaviruses/*/*/*.fasta"
 BETACORONA_SMALL="${PIPELINE_DIR}/betacoronaviruses/close/*/*.fasta \
 		  ${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta" 
 
-# We assume the files exist in a fastq directory
-FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
-READ1_STR="_R1"
-READ2_STR="_R2"
-
 # Usage and commands
 usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jrh"
 dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
@@ -49,7 +44,7 @@ printHelpAndExit() {
     exit "$1"
 }
 
-while getopts "d:t:hr" opt; do
+while getopts "d:t:hrj" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
@@ -59,6 +54,11 @@ while getopts "d:t:hr" opt; do
 	[?]) printHelpAndExit 1;;
     esac
 done
+
+# We assume the files exist in a fastq directory
+FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
+READ1_STR="_R1"
+READ2_STR="_R2"
 
 # Check for installed software
 command -v bwa >/dev/null 2>&1 || { echo >&2 "!*** BWA required but it's not installed."; exit 1; }
@@ -127,6 +127,12 @@ do
     ########## Align 
     ######################################################################
     REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
+    if [[ "$REFERENCE" == *match* ]]
+    then
+	MATCH_REF=${REFERENCE}
+	MATCH_NAME=${REFERENCE_NAME}
+    fi
+
     echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
 
     if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
@@ -139,44 +145,46 @@ do
         file2=${read2files[$i]}
 
 	FILE=$(basename ${file1%$read1str})
-	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped.sam"
+	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
 
         # Align reads
-	bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
+	bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
 
-	# Sort SAM and convert to BAM
-	samtools sort -@ $threads $ALIGNED_FILE -o ${ALIGNED_FILE}"_sorted.bam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
+	# Samtools fixmate and sort, output as BAM
+	samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
+	samtools sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"  2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
     done
 
     # Merge sorted BAMs
-    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
+    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
     then
 	rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 
 	rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
     fi
-
-    if [[ "$REFERENCE" == *match* ]]
+    
+    if samtools markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/dedup.out
     then
-	matchname=${REFERENCE_NAME}
-	matchref=${REFERENCE}
+	rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
     fi
+
+    samtools depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/coverage.out
 
     # In case you want to visualize the bams, index them. 
     if [ -n "$produceIndex" ]
     then
-	samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
+	samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
     fi
 
-    # Statistics (in particular percentage of mapped reads)
-    samtools flagstat ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt 
+    # Statistics 
+    samtools stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
 done
 
 echo "(-: Done with alignment" 
-# Gather alignment statistics (mapping %)
+# Gather alignment statistics (coverage %)
 echo "label,percentage" > ${WORK_DIR}/stats.csv
-for f in ${WORK_DIR}/*/aligned/stats.txt
+for f in ${WORK_DIR}/*/aligned/depth_per_base.txt
 do
-    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{OFS=","}$4=="mapped"{split($5, a, "("); split(a[2],b, "%"); print fname, b[1]}' $f >> ${WORK_DIR}/stats.csv
+    awk -v fname=$(basename ${f%%/aligned*}) '$3>0{count++}END{printf("%s,%0.02f\n", fname, count*100/NR)}' $f >> ${WORK_DIR}/stats.csv
 done
 
 # Produce contigs - this can happen concurrently with alignment
@@ -185,16 +193,14 @@ mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print $2}')
 echo "(-: Done with contigs" 
 # Dot plot - after contig and alignment
-minimap2 -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig_${matchname}.paf 2> ${LOG_DIR}/minimap.out
-if [ ! -s "${WORK_DIR}/contig_${matchname}.paf" ]
+minimap2 -x asm5 $MATCH_REF ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig.paf 2> ${LOG_DIR}/minimap.out
+if [ ! -s "${WORK_DIR}/contig.paf" ]
 then
     echo "!*** Pairwise alignment by minimap2 failed."
     exit 1
 fi
 echo "(-: Done with pairwise comparison" 
-samtools rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam &> ${LOG_DIR}/rmdup.out
-samtools depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt &> ${LOG_DIR}/coverage.out
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${WORK_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report  &> ${LOG_DIR}/dotplot.out
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report  &> ${LOG_DIR}/dotplot.out
 
 echo "(-: Done with dotplot"
 echo "(-: Pipeline completed, check ${FINAL_DIR} for the report"
