@@ -67,7 +67,7 @@ printHelpAndExit() {
     exit "$1"
 }
 
-while getopts "d:t:hr" opt; do
+while getopts "d:t:hrj" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
@@ -166,7 +166,7 @@ do
 		#SBATCH -n 1
 		#SBATCH -c $threads
 		#SBATCH --mem-per-cpu=4G
-                #SBATCH -J "align_${FILE}"
+        #SBATCH -J "align_${FILE}"
 		#SBATCH --threads-per-core=1
 
 		$LOAD_BWA
@@ -185,6 +185,51 @@ ALGNR`
         ######################################################################
         ##########Sort SAMs, convert to BAM         
         ######################################################################
+	jid=`sbatch <<- SAMTOBAM | egrep -o -e "\b[0-9]+$"
+		#!/bin/bash -l
+		#SBATCH -p $QUEUE
+		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/sam2bam-%j.out
+		#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/sam2bam-%j.err
+		#SBATCH -t 2880 
+		#SBATCH -n 1
+		#SBATCH -c $threads
+		#SBATCH --mem-per-cpu=4G
+		#SBATCH --threads-per-core=1
+		#SBATCH -d $dependalign
+
+		$LOAD_SAMTOOLS
+		$SAMTOOLS_CMD view -S -b $ALIGNED_FILE > $ALIGNED_FILE"_unsorted.bam"
+
+SAMTOBAM`
+	dependsam2bam="${dependsort}:$jid"
+
+
+	    ######################################################################
+        ##########Sort SAMs, convert to BAM         
+        ######################################################################
+	jid=`sbatch <<- FIXMATE | egrep -o -e "\b[0-9]+$"
+		#!/bin/bash -l
+		#SBATCH -p $QUEUE
+		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/fixmate-%j.out
+		#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/fixmate-%j.err
+		#SBATCH -t 2880 
+		#SBATCH -n 1
+		#SBATCH -c $threads
+		#SBATCH --mem-per-cpu=4G
+		#SBATCH --threads-per-core=1
+		#SBATCH -d $dependsam2bam
+
+		$LOAD_SAMTOOLS
+		$SAMTOOLS_CMD fixmate -m $ALIGNED_FILE"_unsorted.bam" $ALIGNED_FILE"_matefixd_unsorted.bam"
+
+
+FIXMATE`
+
+	dependfixmate="${dependsort}:$jid"
+
+	    ######################################################################
+        ##########Sort SAMs, convert to BAM         
+        ######################################################################
 	jid=`sbatch <<- SORTSAM | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p $QUEUE
@@ -195,13 +240,35 @@ ALGNR`
 		#SBATCH -c $threads
 		#SBATCH --mem-per-cpu=4G
 		#SBATCH --threads-per-core=1
-		#SBATCH -d $dependalign
+		#SBATCH -d $dependfixmate
 
-		$LOAD_SAMTOOLS 
-		$SAMTOOLS_CMD sort -m 4G -@ $threads $ALIGNED_FILE -o ${ALIGNED_FILE}"_sorted.bam"
+		$LOAD_SAMTOOLS
+		$SAMTOOLS_CMD sort -m 4G -@ $threads $ALIGNED_FILE"_matefixd_unsorted.bam" -o $ALIGNED_FILE"_matefixd_sorted.bam"
+		
 SORTSAM`
 	dependsort="${dependsort}:$jid"
+
+        ######################################################################
+        ##########Sort SAMs, convert to BAM         
+        ######################################################################
+	jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
+		#!/bin/bash -l
+		#SBATCH -p $QUEUE
+		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/mrkdups-%j.out
+		#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/mrkdups-%j.err
+		#SBATCH -t 2880 
+		#SBATCH -n 1
+		#SBATCH -c $threads
+		#SBATCH --mem-per-cpu=4G
+		#SBATCH --threads-per-core=1
+		#SBATCH -d $dependsort
+
+		$LOAD_SAMTOOLS 
+		$SAMTOOLS_CMD markdup $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE"_dupmarkd_matefixd_sorted.bam"
+MRKDUPS`
+	dependmrkdups="${dependsort}:$jid"
     done
+
 
 
     ######################################################################
@@ -353,8 +420,8 @@ jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
     		echo "!*** Pairwise alignment by minimap2 failed."
 		exit 1
 	fi
-	$SAMTOOLS_CMD rmdup ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
-    	$SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
+	$SAMTOOLS_CMD markdup -r ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
+    $SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
 
 MINIMAP`
 dependcollectstats="${dependcollectstats}:$jid"
