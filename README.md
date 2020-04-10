@@ -9,8 +9,8 @@ In either case, you must install the following required software:
 * [Samtools](http://www.htslib.org/download)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [MEGAHIT](https://github.com/voutcn/megahit)
-* [SciPy] (https://www.scipy.org/install.html)
-* [Argparse] (https://pypi.org/project/argparse/)
+* [SciPy](https://www.scipy.org/install.html)
+* [Argparse](https://pypi.org/project/argparse/)
 
 ## Single Machine Quick Start
 
