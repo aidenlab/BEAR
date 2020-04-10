@@ -4,9 +4,9 @@
 ### Given paired end sequencing of putative viral data
 ###   -> Aligns to a selection of potential viruses, sorts and merges
 ###   -> In parallel, assembles the data into contigs
-###   -> After alignment, runs flagstat aligned data to create stats.html
-###   -> After contigging, creates dotplot to add to stats.html
-###   -> Final report created as PDF from stats.html
+###   -> After alignment, runs samtools depth to create stats.csv
+###   -> After contigging, creates pairwise alignment
+###   -> Final report created as PDF with dotplot from paf and stats
 #####
 
 ### VARIABLES: SET THESE FOR YOUR SYSTEM
@@ -43,11 +43,6 @@ BETACORONA_REF_DIR="${PIPELINE_DIR}/betacoronaviruses/*/*/*.fasta"
 BETACORONA_SMALL="${PIPELINE_DIR}/betacoronaviruses/close/*/*.fasta \
 		  ${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta" 
 
-# We assume the files exist in a fastq directory
-FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
-READ1_STR="_R1"
-READ2_STR="_R2"
-
 # Usage and commands
 usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jrh"
 dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
@@ -79,6 +74,11 @@ while getopts "d:t:hrj" opt; do
 	[?]) printHelpAndExit 1;;
     esac
 done
+
+# We assume the files exist in a fastq directory
+FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
+READ1_STR="_R1"
+READ2_STR="_R2"
 
 if [ ! -d "$TOP_DIR/fastq" ]; then
     echo "Directory \"$TOP_DIR/fastq\" does not exist."
@@ -140,21 +140,21 @@ do
     ########## Align 
     ######################################################################
     REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
+
     echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
 
     if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
     if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
     if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
 
+    dependsort="afterok"
+
     for ((i = 0; i < ${#read1files[@]}; ++i)); do
-        usegzip=0
         file1=${read1files[$i]}
         file2=${read2files[$i]}
 
 	FILE=$(basename ${file1%$read1str})
-	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped.sam"
-
-	dependsort="afterok"
+	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
 
         # Align reads
 	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
@@ -166,24 +166,24 @@ do
 		#SBATCH -n 1
 		#SBATCH -c $threads
 		#SBATCH --mem-per-cpu=4G
-        #SBATCH -J "align_${FILE}"
+		#SBATCH -J "align_${FILE}"
 		#SBATCH --threads-per-core=1
 
 		$LOAD_BWA
 		$BWA_CMD 2>&1 | awk '\\\$1=="Version:"{printf(" BWA %s; ", \\\$2)}'
-		echo "Running command $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE"
-		srun --ntasks=1 $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > $ALIGNED_FILE
+		echo "Running command $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > ${ALIGNED_FILE}.sam"
+		srun --ntasks=1 $BWA_CMD mem $threadstring $REFERENCE $file1 $file2 > ${ALIGNED_FILE}.sam
 		if [ \$? -ne 0 ]                      
 		then  
 			exit 1                                         
 		else  
-			echo "(-: Mem align of $name$ext.sam done successfully"             
+			echo "(-: Mem align of ${ALIGNED_FILE}.sam done successfully"             
 		fi
 ALGNR`
 	dependalign="afterok:$jid"
 
         ######################################################################
-        ##########Sort SAMs, convert to BAM         
+        ##########SAM: fixmate, sort
         ######################################################################
 	jid=`sbatch <<- SAMTOBAM | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
@@ -198,60 +198,17 @@ ALGNR`
 		#SBATCH -d $dependalign
 
 		$LOAD_SAMTOOLS
-		$SAMTOOLS_CMD view -S -b $ALIGNED_FILE > $ALIGNED_FILE"_unsorted.bam"
+		$SAMTOOLS_CMD fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
+		$SAMTOOLS_CMD sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"
 
 SAMTOBAM`
-	dependsam2bam="${dependsort}:$jid"
-
-
-	    ######################################################################
-        ##########Sort SAMs, convert to BAM         
-        ######################################################################
-	jid=`sbatch <<- FIXMATE | egrep -o -e "\b[0-9]+$"
-		#!/bin/bash -l
-		#SBATCH -p $QUEUE
-		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/fixmate-%j.out
-		#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/fixmate-%j.err
-		#SBATCH -t 2880 
-		#SBATCH -n 1
-		#SBATCH -c $threads
-		#SBATCH --mem-per-cpu=4G
-		#SBATCH --threads-per-core=1
-		#SBATCH -d $dependsam2bam
-
-		$LOAD_SAMTOOLS
-		$SAMTOOLS_CMD fixmate -m $ALIGNED_FILE"_unsorted.bam" $ALIGNED_FILE"_matefixd_unsorted.bam"
-
-
-FIXMATE`
-
-	dependfixmate="${dependsort}:$jid"
-
-	    ######################################################################
-        ##########Sort SAMs, convert to BAM         
-        ######################################################################
-	jid=`sbatch <<- SORTSAM | egrep -o -e "\b[0-9]+$"
-		#!/bin/bash -l
-		#SBATCH -p $QUEUE
-		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/sortsam-%j.out
-		#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/sortsam-%j.err
-		#SBATCH -t 2880 
-		#SBATCH -n 1
-		#SBATCH -c $threads
-		#SBATCH --mem-per-cpu=4G
-		#SBATCH --threads-per-core=1
-		#SBATCH -d $dependfixmate
-
-		$LOAD_SAMTOOLS
-		$SAMTOOLS_CMD sort -m 4G -@ $threads $ALIGNED_FILE"_matefixd_unsorted.bam" -o $ALIGNED_FILE"_matefixd_sorted.bam"
-		
-SORTSAM`
 	dependsort="${dependsort}:$jid"
-
-        ######################################################################
-        ##########Sort SAMs, convert to BAM         
-        ######################################################################
-	jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
+    done
+    
+    ######################################################################
+    ##########SAM: merge, markdups, depth, stats
+    ######################################################################
+    jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p $QUEUE
 		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/mrkdups-%j.out
@@ -264,44 +221,25 @@ SORTSAM`
 		#SBATCH -d $dependsort
 
 		$LOAD_SAMTOOLS 
-		$SAMTOOLS_CMD markdup $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE"_dupmarkd_matefixd_sorted.bam"
+		if $SAMTOOLS_CMD merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam
+		then
+			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
+			rm ${ALIGNED_FILE}.sam ${ALIGNED_FILE}.bam
+		fi
+		if $SAMTOOLS_CMD markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
+		then
+			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+		fi
+		$SAMTOOLS_CMD depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt
+		$SAMTOOLS_CMD stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep  ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
 MRKDUPS`
-	dependmrkdups="${dependsort}:$jid"
-    done
-
-
-
-    ######################################################################
-    ##########Merge sorted BAMs, get stats, and index if flag set
-    ######################################################################
-    jid=`sbatch <<- MERGESAM | egrep -o -e "\b[0-9]+$"
-	#!/bin/bash -l
-	#SBATCH -p $QUEUE
-	#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/mergesam-%j.out
-	#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/mergesam-%j.err
-	#SBATCH -t 2880 
-	#SBATCH -n 1 
-	#SBATCH -c 1
-	#SBATCH --mem-per-cpu=4G
-	#SBATCH --threads-per-core=1 
-	#SBATCH -d $dependsort
-
-	$LOAD_SAMTOOLS
-	if $SAMTOOLS_CMD merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
-	then
-		rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
-		rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam
-	fi
-
-MERGESAM`
-
     dependmerge="afterok:$jid"
 
     if [[ "$REFERENCE" == *match* ]]
     then
+	MATCH_REF=${REFERENCE}
+	MATCH_NAME=${REFERENCE_NAME}
 	dependmatchdone="afterok:$jid"
-	matchname=${REFERENCE_NAME}
-	matchref=${REFERENCE}
     fi
 
     if [ -n "$produceIndex" ]
@@ -323,26 +261,6 @@ MERGESAM`
 
 INDEXSAM`
     fi
-
-    dependstats="afterok"
-    jid=`sbatch <<- SAMSTATS | egrep -o -e "\b[0-9]+$"
-	#!/bin/bash -l
-	#SBATCH -p $QUEUE
-	#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/samstats-%j.out
-	#SBATCH -e ${WORK_DIR}/${REFERENCE_NAME}/debug/samstats-%j.err
-	#SBATCH -t 2880 
-	#SBATCH -n 1 
-	#SBATCH -c 1
-	#SBATCH --mem-per-cpu=10G
-	#SBATCH --threads-per-core=1 
-	#SBATCH -d $dependmerge
-
-	$LOAD_SAMTOOLS
-	$SAMTOOLS_CMD flagstat ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
-
-SAMSTATS`
-
-    dependstats="${dependstats}:$jid"
 done
 
 echo "#!/bin/bash -l" > "$WORK_DIR"/collect_stats.sh
@@ -354,15 +272,15 @@ echo "#SBATCH -n 1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -c 1" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --mem=200" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
-echo "#SBATCH -d $dependstats"  >> "$WORK_DIR"/collect_stats.sh 
+echo "#SBATCH -d $dependmerge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
-echo "for f in $WORK_DIR/*/aligned/stats.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{OFS=\",\"}\$4==\"mapped\"{split(\$5,a,\"(\"); split(a[2],b, \"%\"); print fname, b[1]}' \$f >> ${WORK_DIR}/stats.csv"  >> $WORK_DIR/collect_stats.sh 
+echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0}\$3>0{count++}END{printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
-sbatch < "$WORK_DIR"/collect_stats.sh
+jid=`sbatch < "$WORK_DIR"/collect_stats.sh`
 
-dependcollectstats="afterok:$jid"
+dependcollectstats="afterok:${jid##* }"
 
 ######################################################################
 ######################################################################
@@ -389,7 +307,7 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 CONTIG`
 
 echo "CONTIG_LENGTH=\$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | cut -f2 -d' ')" > ${WORK_DIR}/call_dotplot.sh
-echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt ${FINAL_DIR}/contig_${matchname}.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report" >> ${WORK_DIR}/call_dotplot.sh
+echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${FINAL_DIR}/contig.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report" >> ${WORK_DIR}/call_dotplot.sh
 
 # need to wait for match alignment
 dependcontig="${dependmatchdone}:$jid"
@@ -414,15 +332,12 @@ jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
 	
 	$LOAD_MINIMAP2
 	$LOAD_SAMTOOLS
-	$MINIMAP2_CMD -x asm5 $matchref ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig_${matchname}.paf
-	if [ ! -s ${FINAL_DIR}/contig_${matchname}.paf ]
+	$MINIMAP2_CMD -x asm5 $MATCH_REF ${FINAL_DIR}/final.contigs.fa > ${FINAL_DIR}/contig.paf
+	if [ ! -s ${FINAL_DIR}/contig.paf ]
 	then
     		echo "!*** Pairwise alignment by minimap2 failed."
 		exit 1
 	fi
-	$SAMTOOLS_CMD markdup -r ${WORK_DIR}/${matchname}/aligned/sorted_merged.bam ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam 
-    $SAMTOOLS_CMD depth ${WORK_DIR}/${matchname}/aligned/sorted_merged_dedup.bam > ${WORK_DIR}/${matchname}/aligned/depth_per_base.txt	
-
 MINIMAP`
 dependcollectstats="${dependcollectstats}:$jid"
 
