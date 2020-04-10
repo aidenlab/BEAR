@@ -275,7 +275,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -d $dependmerge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) '\$3>0{count++}END{printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0}\$3>0{count++}END{printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 jid=`sbatch < "$WORK_DIR"/collect_stats.sh`
