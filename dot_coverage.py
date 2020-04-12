@@ -160,36 +160,21 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	return ax_diagnostic, ax_align
 
 
-def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin_pos, bin_counts):
+def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_coverage- coverage track axis
-			ax_dot- dot plot axis
 			filled- np array data for coverage track
-			dot_data- np array data for dot plot
 			x_length- int length of dot plot x axis
-			y_length- int length of dot plot y axis
 			bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
 	Outputs: ax_coverage- coverage track axis
-			ax_dot- dot plot axis
 	'''
 	#Make coverage track
 	if bin_size == 1:
 		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
 	else:
-		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
-
-	#Make dot plot
-	dot_data = dot_data.sort_values('7')
-	dot_data['cum_offset'] = dot_data['1'].cumsum()
-	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
-
-	def dot_plot(x1, x2, y1, y2, segment_offset,):
-		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
-
-	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
-                     row['2'], row['3'], row['upto_offset']), axis = 1)
+		ax_coverage.stackplot(bin_pos, bin_counts, color=col, linewidth=.01)
 
 	#Coverage track axis style
 	ax_coverage.set_xlim(0, x_length)
@@ -206,6 +191,29 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 	ax_coverage = thicker_spines(ax_coverage, False)
 	ax_coverage.spines['bottom'].set_position('zero')
 
+	return ax_coverage
+
+
+def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
+	'''Create dot plot and coverage track.
+
+	Inputs: ax_dot- dot plot axis
+			dot_data- np array data for dot plot
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
+	Outputs: ax_dot- dot plot axis
+	'''
+	#Make dot plot
+	dot_data = dot_data.sort_values('7')
+	dot_data['cum_offset'] = dot_data['1'].cumsum()
+	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
+
+	def dot_plot(x1, x2, y1, y2, segment_offset,):
+		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
+
+	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
+                     row['2'], row['3'], row['upto_offset']), axis = 1)
+
 	#Dot plot axis style
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
@@ -219,11 +227,11 @@ def plot_dot_plot(ax_coverage, ax_dot, filled, dot_data, x_length, y_length, bin
 
 	ax_dot = thicker_spines(ax_dot, True)
 
-	return ax_coverage, ax_dot
+	return ax_dot
 
 
 def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file):
-	'''Plots coverage track on top of dot plot. Writes .pdf
+	'''Plots coverage track, dot plot, alignment bar graph, diagnostic symbol. Writes .pdf
 
 	Inputs: filled- np array data for coverage track
 			dot_data- np array data for dot plot
@@ -233,14 +241,12 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 			x_length- int length of dot plot x axis
 			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
-	Output: fig- matplotlib fig of coverage track, dot plot, alignment plot
 	'''
-
 	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(17.75, 12), 
 		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 6.75]})
 
-	axs[0][0], axs[1][0] = plot_dot_plot(axs[0][0], axs[1][0], filled, dot_data, x_length, y_length,
-		bin_pos, bin_counts)
+	axs[0][0] = plot_coverage(axs[0][0], filled, bin_pos, bin_counts, x_length)
+	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, x_length, y_length)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
 
 	fig.subplots_adjust(hspace=0.04, wspace = 0.05)	
@@ -250,7 +256,45 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
         transparent=False, bbox_inches=None, pad_inches=0.01,
         frameon=False, metadata=None)
 
-	return fig
+
+def plot_dotonly(dot_data, x_length, y_length, write_file):
+	'''Plots only dot plot. Writes .svg
+
+	Inputs: dot_data- np array data for dot plot
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
+			write_file- string name of file to write plots to
+	'''
+	fig_dot_only, dot_axs = plt.subplots(1, 1, sharex=False, sharey=False, figsize=(10, 10))
+	dot_axs = plot_dot_plot(dot_axs, dot_data, x_length, y_length)
+	plt.savefig(write_file+'_dot_only.svg',
+		dpi=None, facecolor='w', edgecolor='w',
+        orientation='portrait', papertype=None, format=None,
+        transparent=False, bbox_inches=None, pad_inches=0.01,
+        frameon=False, metadata=None)
+
+
+def plot_dot_coverage(filled, dot_data, bin_pos, bin_counts, x_length, y_length, write_file):
+	'''Plots coverage track on top of dot plot. Writes .svg
+
+	Inputs: filled- np array data for coverage track
+			dot_data- np array data for dot plot
+			bin_pos- list of locations for histogram bars on x axis
+			bin_counts- list of counts per bin
+			x_length- int length of dot plot x axis
+			y_length- int length of dot plot y axis
+			write_file- string name of file to write plots to
+	'''
+	fig_dot_coverage, dot_coverage_axs = plt.subplots(2, 1, sharex=False, sharey=False, figsize=(10, 12), 
+		gridspec_kw={'height_ratios': [1, 11]})
+	dot_coverage_axs[0] = plot_coverage(dot_coverage_axs[0], filled, bin_pos, bin_counts, x_length)
+	dot_coverage_axs[1] = plot_dot_plot(dot_coverage_axs[1], dot_data, x_length, y_length)
+	fig_dot_coverage.subplots_adjust(hspace=0.04, wspace = 0.05)	
+	plt.savefig(write_file+'_dot_coverage_only.svg',
+		dpi=None, facecolor='w', edgecolor='w',
+        orientation='portrait', papertype=None, format=None,
+        transparent=False, bbox_inches=None, pad_inches=0.01,
+        frameon=False, metadata=None)
 
 
 def main(f_txt, dot_data, f_csv, x_length, y_length, write_file):
@@ -265,7 +309,9 @@ def main(f_txt, dot_data, f_csv, x_length, y_length, write_file):
 	'''
 	filled = fill_blanks(f_txt, x_length)
 	bin_pos, bin_counts = make_hist(filled, x_length)
-	fig = plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file)
+	plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file)
+	plot_dotonly(dot_data, x_length, y_length, write_file)
+	plot_dot_coverage(filled, dot_data, bin_pos, bin_counts, x_length, y_length, write_file)
 
 
 if __name__ == "__main__":
@@ -294,7 +340,8 @@ if __name__ == "__main__":
 	col_names = [str(i) for i in range(18)]
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
 	x_length = np.sum(dot_data['6'].values[0])
+	y_length = args.y_axis_length
 	main(args.read_txt_file, dot_data, args.read_csv_file, 
-		x_length, args.y_axis_length, args.write_file)
+		x_length, y_length, args.write_file)
 	
 
