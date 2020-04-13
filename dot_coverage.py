@@ -290,7 +290,7 @@ def plot_dot_coverage(filled, dot_data, bin_pos, bin_counts, x_length, y_length,
 	dot_coverage_axs[0] = plot_coverage(dot_coverage_axs[0], filled, bin_pos, bin_counts, x_length)
 	dot_coverage_axs[1] = plot_dot_plot(dot_coverage_axs[1], dot_data, x_length, y_length)
 	fig_dot_coverage.subplots_adjust(hspace=0.04, wspace = 0.05)	
-	plt.savefig(write_file+'_dot_coverage_only.svg',
+	plt.savefig(write_file+'_dot_coverage_only.png',
 		dpi=None, facecolor='w', edgecolor='w',
         orientation='portrait', papertype=None, format=None,
         transparent=False, bbox_inches=None, pad_inches=0.01,
