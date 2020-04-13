@@ -209,7 +209,8 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 
 	def dot_plot(x1, x2, y1, y2, segment_offset,):
 		if y2-y1>400:
-			print('large pathological 400bp case')
+			pass
+			#print('large pathological 400bp case')
 		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
 
 	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
