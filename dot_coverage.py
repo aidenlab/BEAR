@@ -11,27 +11,26 @@ num_bins = 30000.0/bin_size
 width_of_bars = 100000.0/num_bins
 x_labels = "SARS-CoV-2 RefSeq Assembly"
 y_labels = "de novo SARS-CoV-2 Assembly"
-# col = "#D98880d" ###pink
 col = "#80D1D9" ###blue
 
 name_key = pd.DataFrame({ 
-	'label': ['bat_coronavirus_HKU4_1', 
-	'bat_coronavirus_HKU5_1',
-	'bat_coronavirus_HKU9_1', 
-	'bat_coronavirus_Parker', 
-	'bat_Hp_betacoronavirus_Zhejiang2013',
-	'betacoronavirus_England', 
-	'betacoronavirus_erinaceus', 
-	'betacoronavirus_HKU24_strain_HKU24_R05005I',
-	'bovine_coronavirus', 
-	'human_coronavirus_HKU1', 
-	'human_coronavirus_OC43_strain_ATCC_VR_759',
-	'middle_east_respiratory_syndrome_coronavirus', 
-	'mouse_hepatitis_virus_strain_MHV_A59_C12_mutant',
-	'rabbit_coronavirus_HKU14', 
-	'rousettus_bat_coronavirus_isolate_GCCDC1_356', 
-	'sars_coronavirus',
-	'wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1'], 
+	'id': ['Bat_Coronavirus_HKU4_1',
+	'Bat_Coronavirus_HKU5_1',
+	'Bat_Coronavirus_HKU9_1', 
+	'bat_Coronavirus_Parker', 
+	'Bat_Hp_Betacoronavirus_Zhejiang2013',
+	'Betacoronavirus_England', 
+	'Betacoronavirus_Erinaceus', 
+	'Betacoronavirus_HKU24_Strain_HKU24_R05005I',
+	'Bovine_Coronavirus', 
+	'Human_Coronavirus_HKU1', 
+	'Human_Coronavirus_OC43_Strain_ATCC_VR_759',
+	'Middle_East_Respiratory_Syndrome_Coronavirus', 
+	'Mouse_Hepatitis_Virus_Strain_MHV_A59_C12_mutant',
+	'Rabbit_Coronavirus_HKU14', 
+	'Rousettus_Bat_Coronavirus_Isolate_GCCDC1_356', 
+	'Severe_Acute_Respiratory_Syndrome_Coronavirus',
+	'Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1'], 
 	'new': ['Bat coronavirus HKU4-1', 
 	'Bat coronavirus HKU5-1', 
 	'Bat coronavirus HKU9-1', 
@@ -117,10 +116,9 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	'''
 	#Read/format/sort alignment data
 	align_data = pd.read_csv(f_csv)
-	align_data = align_data.merge(name_key, how="left")
-	#align_data['new'] = align_data['label'].str.replace('_',' ')
-	#align_data['new'] = align_data.new.str.title()
+	name_key['id'] = name_key['id'].str.lower()
 	align_data['id'] = align_data['label'].str.lower()
+	align_data = align_data.merge(name_key, how="left")
 	align_data = align_data.sort_values('percentage')
 	align_data.loc[align_data['id'].str.contains('wuhan'), 'new'] = 'SARS-CoV-2'
 	
@@ -204,11 +202,14 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 	Outputs: ax_dot- dot plot axis
 	'''
 	#Make dot plot
-	dot_data = dot_data.sort_values('7')
+	if y_length < 100000:
+		dot_data = dot_data.sort_values('7')
 	dot_data['cum_offset'] = dot_data['1'].cumsum()
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
 
 	def dot_plot(x1, x2, y1, y2, segment_offset,):
+		if y2-y1>400:
+			print('large pathological 400bp case')
 		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
 
 	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
@@ -220,10 +221,15 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 	ax_dot.set_xlabel(x_labels)
 	ax_dot.set_ylabel(y_labels)
 
-	t_loc = np.arange(0, max(x_length, y_length)+1, 10000)
-	t_names = [0, 1, 2, 3, 4]
-	ax_dot.set_xticks(t_loc)
-	ax_dot.set_yticks(t_loc)
+	def space_ticks(ax_length):
+		tick_space = (ax_length+1)/3
+		mult_10 = float(10**(math.floor(np.log10(tick_space))))
+		return np.arange(0, ax_length+1, int(round(tick_space/ mult_10)) * mult_10)
+
+	t_xx_loc = space_ticks(x_length)
+	t_yy_loc = space_ticks(y_length)
+	ax_dot.set_xticks(t_xx_loc)
+	ax_dot.set_yticks(t_yy_loc)
 
 	ax_dot = thicker_spines(ax_dot, True)
 
@@ -341,6 +347,7 @@ if __name__ == "__main__":
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
 	x_length = np.sum(dot_data['6'].values[0])
 	y_length = args.y_axis_length
+
 	main(args.read_txt_file, dot_data, args.read_csv_file, 
 		x_length, y_length, args.write_file)
 	
