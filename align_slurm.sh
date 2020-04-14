@@ -133,7 +133,6 @@ if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"
 if ! mkdir "${LOG_DIR}"; then echo "***! Unable to create ${LOG_DIR}! Exiting"; exit 1; fi
 if ! mkdir "${FINAL_DIR}"; then echo "***! Unable to create ${FINAL_DIR}! Exiting"; exit 1; fi
 
-
 for REFERENCE in $REFERENCES
 do
     ######################################################################
@@ -153,9 +152,9 @@ do
         file1=${read1files[$i]}
         file2=${read2files[$i]}
 
-	FILE=$(basename ${file1%$read1str})
+	FILE=$(basename ${file1%$READ1_STR*})
 	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
-
+	echo $file1 $file2
         # Align reads
 	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
@@ -223,12 +222,11 @@ SAMTOBAM`
 		$LOAD_SAMTOOLS 
 		if $SAMTOOLS_CMD merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam
 		then
-			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam
-			rm ${ALIGNED_FILE}.sam ${ALIGNED_FILE}.bam
+			#rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_mapped*
 		fi
 		if $SAMTOOLS_CMD markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
 		then
-			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+			#rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 		fi
 		$SAMTOOLS_CMD depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt
 		$SAMTOOLS_CMD stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep  ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
@@ -275,7 +273,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -d $dependmerge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0}\$3>0{count++}END{printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0}\$3>0{count++}END{if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 jid=`sbatch < "$WORK_DIR"/collect_stats.sh`
@@ -336,7 +334,7 @@ jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
 	if [ ! -s ${FINAL_DIR}/contig.paf ]
 	then
     		echo "!*** Pairwise alignment by minimap2 failed."
-		exit 1
+		touch ${FINAL_DIR}/contig.paf
 	fi
 MINIMAP`
 dependcollectstats="${dependcollectstats}:$jid"
