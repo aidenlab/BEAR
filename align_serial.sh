@@ -5,9 +5,9 @@
 ### Given paired end sequencing of putative viral data
 ###   -> Aligns to a selection of potential viruses, sorts and merges
 ###   -> Assembles the data into contigs
-###   -> After alignment, runs flagstat aligned data to create stats.html
-###   -> After contigging, creates dotplot to add to stats.html
-###   -> Final report created as PDF from stats.html
+###   -> After alignment, runs samtools depth to create stats.csv
+###   -> After contigging, creates pairwise alignment
+###   -> Final report created as PDF with dotplot from paf and stats
 #####
 
 ### REQUIRED SOFTWARE 
@@ -140,7 +140,6 @@ do
     if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
 
     for ((i = 0; i < ${#read1files[@]}; ++i)); do
-        usegzip=0
         file1=${read1files[$i]}
         file2=${read2files[$i]}
 
@@ -184,7 +183,7 @@ echo "(-: Done with alignment"
 echo "label,percentage" > ${WORK_DIR}/stats.csv
 for f in ${WORK_DIR}/*/aligned/depth_per_base.txt
 do
-    awk -v fname=$(basename ${f%%/aligned*}) '$3>0{count++}END{printf("%s,%0.02f\n", fname, count*100/NR)}' $f >> ${WORK_DIR}/stats.csv
+    awk -v fname=$(basename ${f%%/aligned*}) '$3>0{count++}END{if (NR==0){NR=1} printf("%s,%0.02f\n", fname, count*100/NR)}' $f >> ${WORK_DIR}/stats.csv
 done
 
 # Produce contigs - this can happen concurrently with alignment
@@ -197,7 +196,7 @@ minimap2 -x asm5 $MATCH_REF ${FINAL_DIR}/final.contigs.fa > ${WORK_DIR}/contig.p
 if [ ! -s "${WORK_DIR}/contig.paf" ]
 then
     echo "!*** Pairwise alignment by minimap2 failed."
-    exit 1
+    touch ${WORK_DIR}/contig.paf
 fi
 echo "(-: Done with pairwise comparison" 
 python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report  &> ${LOG_DIR}/dotplot.out
