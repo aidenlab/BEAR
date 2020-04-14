@@ -13,3 +13,5 @@ stats1.pdf
 make_list.py
 stats.csv
 *.csv
+no_alignment.py
+*.pyc
