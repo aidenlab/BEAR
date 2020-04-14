@@ -154,7 +154,7 @@ do
 
 	FILE=$(basename ${file1%$READ1_STR*})
 	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
-	echo $file1 $file2
+
         # Align reads
 	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
