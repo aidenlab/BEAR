@@ -148,7 +148,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	align_data.loc[align_data['id'].str.contains('wuhan'), 'new'] = 'SARS-CoV-2'
 	
 	#Plot diagnostic symbol
-	ax_diagnostic.plot([.26, .34], [.5, .5], linewidth=20, color=col)
+	ax_diagnostic.plot([.27, .33], [.5, .5], linewidth=20, color=col)
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
 		ax_diagnostic.text(.4, .83, "Test Result: Positive")
