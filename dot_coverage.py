@@ -3,7 +3,7 @@ import matplotlib, math, argparse
 matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
 import pandas as pd
-matplotlib.rcParams.update({'font.size': 14})
+matplotlib.rcParams.update({'font.size': 18})
 
  
 bin_size = 1
@@ -12,6 +12,7 @@ width_of_bars = 100000.0/num_bins
 x_labels = "SARS-CoV-2 RefSeq Assembly"
 y_labels = "de novo SARS-CoV-2 Assembly"
 col = "#80D1D9" ###blue
+
 
 name_key = pd.DataFrame({ 
 	'id': ['Bat_Coronavirus_HKU4_1',
@@ -61,9 +62,8 @@ def fill_blanks(f_txt, x_length):
 	if x_length == 0:
 		return False
 	raw = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
-	#if len(raw.index) == 0:
-	#	print("Is your .txt file empty?")
-	#	return False
+	if len(raw.index) == 0:
+		return False
 	raw_np_array = np.zeros((len(raw),2))
 	
 	raw_np_array[:,0] = raw['second'].values
@@ -128,6 +128,13 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	Outputs: ax_diagnostic- diagnostic symbol axis
 			ax_align- alignment bar graph axis
 	'''
+	#Diagnostic axis style
+	ax_diagnostic.axis('off')
+
+	#Alignment axis style
+	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses', labelpad=10)
+	ax_align = thicker_spines(ax_align, True)
+
 	#Read/format/sort alignment data
 	try:
 		align_data = pd.read_csv(f_csv)
@@ -144,13 +151,13 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_diagnostic.plot([.26, .34], [.5, .5], linewidth=20, color=col)
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
-		ax_diagnostic.text(.4, .82, "Test Result: Positive")
+		ax_diagnostic.text(.4, .83, "Test Result: Positive")
 		ax_diagnostic.text(.4, .55, "SARS-CoV-2 was detected", color='black')
-		ax_diagnostic.text(.4, .3, "in the sample", color='black')
+		ax_diagnostic.text(.4, .29, "in the sample", color='black')
 	else:
-		ax_diagnostic.text(.4, .82, "Test Result: Negative")
+		ax_diagnostic.text(.4, .83, "Test Result: Negative")
 		ax_diagnostic.text(.4, .55, "SARS-COV2 was not detected", color='black')
-		ax_diagnostic.text(.4, .3, "in the the sample", color='black')
+		ax_diagnostic.text(.4, .29, "in the the sample", color='black')
 
 	#Plot alignment bar chart
 	def new_labels(new_name, perc):
@@ -160,18 +167,15 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 							row['percentage']), axis = 1)
 	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color=col, legend=False)
 	
-	#Diagnostic axis style
+	#Diagnostic axis limits
 	ax_diagnostic.set_xlim(0,1)
 	ax_diagnostic.set_ylim(0,1)
-	ax_diagnostic.axis('off')
-
-	#Alignment axis style
-	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses', labelpad=10)
-	ax_align.set_ylabel('')
+	
+	#Alignment axis tick marks and limits
 	ax_align.set_xlim(0,100)
 	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
 	plt.setp(ax_align.get_yticklabels(), ha="left")
-	ax_align = thicker_spines(ax_align, True)
+	ax_align.set_ylabel('')
 	
 	return ax_diagnostic, ax_align
 
@@ -186,6 +190,14 @@ def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 			bin_counts- list of counts per bin
 	Outputs: ax_coverage- coverage track axis
 	'''
+	#Coverage track axis style
+	ax_coverage.set_yscale('log')
+	ax_coverage.set_ylabel("Coverage", labelpad=10)
+	ax_coverage.spines['right'].set_visible(False)
+	ax_coverage.spines['top'].set_visible(False)
+	ax_coverage.spines['bottom'].set_position(('axes', 0))#'zero')
+	ax_coverage = thicker_spines(ax_coverage, False)
+	
 	if filled is False:
 		return strip_ticks(ax_coverage)
 	
@@ -195,21 +207,17 @@ def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 	else:
 		ax_coverage.stackplot(bin_pos, bin_counts, color=col, linewidth=.01)
 
-	#Coverage track axis style
-	#ax_coverage.set_yscale('log')
+	#Coverage track tick marks and limits
 	ax_coverage.set_xlim(0, x_length)
-	ax_coverage.set_ylabel("Coverage", labelpad=10)
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
-	t_coverage = [int(0), int(math.ceil(coverage_max/ 100.0)) * 100]
-	ax_coverage.set_yticks(t_coverage)
+	t_coverage = [0, int(math.ceil(coverage_max/ 100.0)) * 100]
+	t_log_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
+	#ax_coverage.set_yticks(t_coverage)
+	ax_coverage.set_yticks(t_log_coverage)
 	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-
-	ax_coverage.spines['right'].set_visible(False)
-	ax_coverage.spines['top'].set_visible(False)
-	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
-
-	ax_coverage = thicker_spines(ax_coverage, False)
-	ax_coverage.spines['bottom'].set_position('zero')
+	#ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
+	ax_coverage.spines['left'].set_bounds(t_log_coverage[0], t_log_coverage[1])
+	
 
 	return ax_coverage
 
@@ -223,6 +231,11 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 			y_length- int length of dot plot y axis
 	Outputs: ax_dot- dot plot axis
 	'''
+	#Dot plot axis style
+	ax_dot = thicker_spines(ax_dot, True)
+	ax_dot.set_xlabel(x_labels, labelpad=10)
+	ax_dot.set_ylabel(y_labels, labelpad=10)
+
 	if len(dot_data.index) == 0:
 		return strip_ticks(ax_dot)
 	
@@ -238,12 +251,10 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
                      row['2'], row['3'], row['upto_offset']), axis = 1)
 
-	#Dot plot axis style
+	#Dot plot tick marks and limits
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
-	ax_dot.set_xlabel(x_labels, labelpad=10)
-	ax_dot.set_ylabel(y_labels, labelpad=10)
-
+	
 	def space_ticks(ax_length):
 		tick_space = (ax_length+1)/3
 		mult_10 = float(10**(math.floor(np.log10(tick_space))))
@@ -253,8 +264,6 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 	t_yy_loc = space_ticks(y_length)
 	ax_dot.set_xticks(t_xx_loc)
 	ax_dot.set_yticks(t_yy_loc)
-
-	ax_dot = thicker_spines(ax_dot, True)
 
 	return ax_dot
 
@@ -271,14 +280,14 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
 	'''
-	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(19.5, 12), 
-		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 8.5]})
+	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(22, 12), 
+		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 11]})
 
 	axs[0][0] = plot_coverage(axs[0][0], filled, bin_pos, bin_counts, x_length)
 	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, x_length, y_length)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
 
-	fig.subplots_adjust(hspace=0.04, wspace = 0.05)	
+	fig.subplots_adjust(hspace=0.09, wspace = 0.05)	
 	plt.savefig(write_file+'.pdf',
 		dpi=None, facecolor='w', edgecolor='w',
         orientation='portrait', papertype=None, format=None,
