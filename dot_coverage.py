@@ -5,14 +5,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 matplotlib.rcParams.update({'font.size': 18})
 
- 
-bin_size = 1
-num_bins = 30000.0/bin_size
-width_of_bars = 100000.0/num_bins
+
 x_labels = "SARS-CoV-2 RefSeq Assembly"
 y_labels = "de novo SARS-CoV-2 Assembly"
 col = "#80D1D9" ###blue
-
+col = "#5DADE2"
 
 name_key = pd.DataFrame({ 
 	'id': ['Bat_Coronavirus_HKU4_1',
@@ -50,48 +47,6 @@ name_key = pd.DataFrame({
 	'Severe acute respiratory syndrome (SARS) coronavirus',
 	'SARS-CoV-2']
 	})
- 
-
-def fill_blanks(f_txt, x_length):
-	'''Fills in histogram blanks.
-
-	Inputs: f_txt- .txt file string with position read counts
-			x_length- int length of x axis
-	Outputs: filled- np array with 0s filled in
-	'''
-	if x_length == 0:
-		return False
-	raw = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
-	if len(raw.index) == 0:
-		return False
-	raw_np_array = np.zeros((len(raw),2))
-	
-	raw_np_array[:,0] = raw['second'].values
-	raw_np_array[:,1] = raw['third'].values
-	
-	filled = np.zeros((x_length, 2))
-	filled[:,0] = np.arange(1, x_length+1)
-	filled[np.isin(filled[:,0], raw_np_array[:,0]),1] = raw_np_array[:,1]
-
-	return filled
-
-
-def make_hist(data, x_length):
-	'''Makes a histogram from position read counts
-
-	Inputs: data- np array of filled in posiiton read counts
-			x_length- int length of genome
-	Outputs: bin_pos- list of locations for histogram bars on x axis
-			bin_counts- list of counts per bin
-	'''
-	if data is False:
-		return [], []
-	bins = np.arange(1, x_length+bin_size, bin_size)
-	digitized = np.digitize(data[:,0], bins)
-	bin_counts = [data[digitized == i,1].sum() for i in range(1, len(bins))]
-	bin_pos = [(bins[i]+bins[i+1]-1)/2.0 for i in range(len(bins)-1)]
-	
-	return bin_pos, bin_counts
 
 
 def thicker_spines(ax, all_spines):
@@ -132,7 +87,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_diagnostic.axis('off')
 
 	#Alignment axis style
-	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses', labelpad=10)
+	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses', labelpad=10, fontweight='bold')
 	ax_align = thicker_spines(ax_align, True)
 
 	#Read/format/sort alignment data
@@ -151,13 +106,13 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_diagnostic.plot([.27, .33], [.5, .5], linewidth=20, color=col)
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
-		ax_diagnostic.text(.4, .83, "Test Result: Positive")
-		ax_diagnostic.text(.4, .55, "SARS-CoV-2 was detected", color='black')
-		ax_diagnostic.text(.4, .29, "in the sample", color='black')
+		ax_diagnostic.text(.4, .70, "Test Result: Positive", fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black', fontweight='bold')
+		ax_diagnostic.text(.4, .11, "in the sample", color='black', fontweight='bold')
 	else:
-		ax_diagnostic.text(.4, .83, "Test Result: Negative")
-		ax_diagnostic.text(.4, .55, "SARS-COV2 was not detected", color='black')
-		ax_diagnostic.text(.4, .29, "in the the sample", color='black')
+		ax_diagnostic.text(.4, .70, "Test Result: Negative", fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-COV2 was not detected", color='black', fontweight='bold')
+		ax_diagnostic.text(.4, .11, "in the the sample", color='black', fontweight='bold')
 
 	#Plot alignment bar chart
 	def new_labels(new_name, perc):
@@ -173,6 +128,8 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	
 	#Alignment axis tick marks and limits
 	ax_align.set_xlim(0,100)
+	ax_align.set_xticks([0, 25, 50, 75, 100])
+	ax_align.set_xticklabels([0, 25, 50, 75, 100], fontdict={'fontweight':'bold'})
 	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
 	plt.setp(ax_align.get_yticklabels(), ha="left")
 	ax_align.set_ylabel('')
@@ -180,7 +137,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	return ax_diagnostic, ax_align
 
 
-def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
+def plot_coverage(ax_coverage, cov_data):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_coverage- coverage track axis
@@ -192,37 +149,35 @@ def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 	'''
 	#Coverage track axis style
 	ax_coverage.set_yscale('log')
-	ax_coverage.set_ylabel("Coverage", labelpad=10)
+	ax_coverage.set_ylabel("Coverage", labelpad=10, fontweight='bold')
 	ax_coverage.spines['right'].set_visible(False)
 	ax_coverage.spines['top'].set_visible(False)
 	ax_coverage.spines['bottom'].set_position(('axes', 0))#'zero')
 	ax_coverage = thicker_spines(ax_coverage, False)
 	
-	if filled is False:
+	print(cov_data)
+	if cov_data is None:
 		return strip_ticks(ax_coverage)
 	
 	#Make coverage track
-	if bin_size == 1:
-		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
-	else:
-		ax_coverage.stackplot(bin_pos, bin_counts, color=col, linewidth=.01)
+	ax_coverage.stackplot(cov_data[:,0], cov_data[:,1], color=col, linewidth=.01)
 
 	#Coverage track tick marks and limits
-	ax_coverage.set_xlim(0, x_length)
+	ax_coverage.set_xlim(0, np.max(cov_data[:,1]))
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
 	t_coverage = [0, int(math.ceil(coverage_max/ 100.0)) * 100]
 	t_log_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
 	#ax_coverage.set_yticks(t_coverage)
 	ax_coverage.set_yticks(t_log_coverage)
+	ax_coverage.set_yticklabels(t_log_coverage, fontdict={'fontweight':'bold'})
 	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 	#ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
 	ax_coverage.spines['left'].set_bounds(t_log_coverage[0], t_log_coverage[1])
-	
 
 	return ax_coverage
 
 
-def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
+def plot_dot_plot(ax_dot, dot_data, y_length):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_dot- dot plot axis
@@ -233,8 +188,8 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 	'''
 	#Dot plot axis style
 	ax_dot = thicker_spines(ax_dot, True)
-	ax_dot.set_xlabel(x_labels, labelpad=10)
-	ax_dot.set_ylabel(y_labels, labelpad=10)
+	ax_dot.set_xlabel(x_labels, labelpad=10, fontweight='bold')
+	ax_dot.set_ylabel(y_labels, labelpad=10, fontweight='bold')
 
 	if len(dot_data.index) == 0:
 		return strip_ticks(ax_dot)
@@ -252,23 +207,27 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
                      row['2'], row['3'], row['upto_offset']), axis = 1)
 
 	#Dot plot tick marks and limits
+	x_length = np.sum(dot_data['6'].values[0])
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
 	
 	def space_ticks(ax_length):
 		tick_space = (ax_length+1)/3
 		mult_10 = float(10**(math.floor(np.log10(tick_space))))
-		return np.arange(0, ax_length+1, int(round(tick_space/ mult_10)) * mult_10)
+		ticks = np.arange(0, ax_length+1, int(round(tick_space/ mult_10)) * mult_10)
+		return ticks.astype(int)
 
 	t_xx_loc = space_ticks(x_length)
 	t_yy_loc = space_ticks(y_length)
 	ax_dot.set_xticks(t_xx_loc)
 	ax_dot.set_yticks(t_yy_loc)
+	ax_dot.set_xticklabels(t_xx_loc, fontdict={'fontweight':'bold'})
+	ax_dot.set_yticklabels(t_yy_loc, fontdict={'fontweight':'bold'})
 
 	return ax_dot
 
 
-def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file):
+def plot(f_txt, dot_data, f_csv, y_length, write_file):
 	'''Plots coverage track, dot plot, alignment bar graph, diagnostic symbol. Writes .pdf
 
 	Inputs: filled- np array data for coverage track
@@ -276,38 +235,30 @@ def plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write
 			f_csv- string of .csv file for alignment plot
 			bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
-			x_length- int length of dot plot x axis
 			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
 	'''
 	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(22, 12), 
 		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 11]})
 
-	axs[0][0] = plot_coverage(axs[0][0], filled, bin_pos, bin_counts, x_length)
-	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, x_length, y_length)
+	cov_pd = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
+	if len(cov_pd.index) == 0:
+		cov_data = None
+	else:
+		cov_data = np.zeros((np.max(cov_pd['second'].values), 2))
+		cov_data[:,0] = cov_pd['second'].values
+		cov_data[:,1] = cov_pd['third'].values
+
+	axs[0][0] = plot_coverage(axs[0][0], cov_data)
+	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, y_length)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
 
-	fig.subplots_adjust(hspace=0.09, wspace = 0.05)	
+	fig.subplots_adjust(hspace=0.11, wspace = 0.05)	
 	plt.savefig(write_file+'.pdf',
 		dpi=None, facecolor='w', edgecolor='w',
         orientation='portrait', papertype=None, format=None,
         transparent=False, bbox_inches='tight', pad_inches=0.4,
         frameon=False, metadata=None)
-
-
-def main(f_txt, dot_data, f_csv, x_length, y_length, write_file):
-	'''Reads .txt + .paf, plots coverage track + dot plot, writes plots to file
-
-	Inputs: f_txt- .txt file string to read for histogram
-			dot_data- np array data for dot plot
-			f_csv- for alignment bar graph
-			x_length- int length of dot plot x axis
-			y_length- int length of dot plot y axis
-			write_file- string name of file to write plots to
-	'''
-	filled = fill_blanks(f_txt, x_length)
-	bin_pos, bin_counts = make_hist(filled, x_length)
-	plot(filled, dot_data, f_csv, bin_pos, bin_counts, x_length, y_length, write_file)
 
 
 if __name__ == "__main__":
@@ -335,15 +286,8 @@ if __name__ == "__main__":
 
 	col_names = [str(i) for i in range(18)]
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
-
-	if len(dot_data.index) == 0:
-		x_length = 0
-	else:
-		x_length = np.sum(dot_data['6'].values[0])
-	
 	y_length = args.y_axis_length
 
-	main(args.read_txt_file, dot_data, args.read_csv_file, 
-		x_length, y_length, args.write_file)
-	
+	plot(args.read_txt_file, dot_data, args.read_csv_file, 
+		y_length, args.write_file)
 
