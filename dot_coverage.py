@@ -58,7 +58,12 @@ def fill_blanks(f_txt, x_length):
 			x_length- int length of x axis
 	Outputs: filled- np array with 0s filled in
 	'''
+	if x_length == 0:
+		return False
 	raw = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
+	#if len(raw.index) == 0:
+	#	print("Is your .txt file empty?")
+	#	return False
 	raw_np_array = np.zeros((len(raw),2))
 	
 	raw_np_array[:,0] = raw['second'].values
@@ -79,6 +84,8 @@ def make_hist(data, x_length):
 	Outputs: bin_pos- list of locations for histogram bars on x axis
 			bin_counts- list of counts per bin
 	'''
+	if data is False:
+		return [], []
 	bins = np.arange(1, x_length+bin_size, bin_size)
 	digitized = np.digitize(data[:,0], bins)
 	bin_counts = [data[digitized == i,1].sum() for i in range(1, len(bins))]
@@ -104,6 +111,11 @@ def thicker_spines(ax, all_spines):
 	return ax
 
 
+def strip_ticks(ax):
+	ax.axis('off')
+	return ax
+
+
 def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	'''
 	Plots horizontal bar graph of alignment percentages
@@ -115,7 +127,11 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 			ax_align- alignment bar graph axis
 	'''
 	#Read/format/sort alignment data
-	align_data = pd.read_csv(f_csv)
+	try:
+		align_data = pd.read_csv(f_csv)
+	except:
+		return strip_ticks(ax_diagnostic), strip_ticks(ax_align)
+	
 	name_key['id'] = name_key['id'].str.lower()
 	align_data['id'] = align_data['label'].str.lower()
 	align_data = align_data.merge(name_key, how="left")
@@ -168,6 +184,9 @@ def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 			bin_counts- list of counts per bin
 	Outputs: ax_coverage- coverage track axis
 	'''
+	if filled is False:
+		return strip_ticks(ax_coverage)
+	
 	#Make coverage track
 	if bin_size == 1:
 		ax_coverage.stackplot(filled[:,0], filled[:,1], color=col, linewidth=.01)
@@ -175,6 +194,7 @@ def plot_coverage(ax_coverage, filled, bin_pos, bin_counts, x_length):
 		ax_coverage.stackplot(bin_pos, bin_counts, color=col, linewidth=.01)
 
 	#Coverage track axis style
+	#ax_coverage.set_yscale('log')
 	ax_coverage.set_xlim(0, x_length)
 	ax_coverage.set_ylabel("Coverage")
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
@@ -201,6 +221,9 @@ def plot_dot_plot(ax_dot, dot_data, x_length, y_length):
 			y_length- int length of dot plot y axis
 	Outputs: ax_dot- dot plot axis
 	'''
+	if len(dot_data.index) == 0:
+		return strip_ticks(ax_dot)
+	
 	#Make dot plot
 	if y_length < 100000:
 		dot_data = dot_data.sort_values('7')
@@ -346,7 +369,12 @@ if __name__ == "__main__":
 
 	col_names = [str(i) for i in range(18)]
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
-	x_length = np.sum(dot_data['6'].values[0])
+
+	if len(dot_data.index) == 0:
+		x_length = 0
+	else:
+		x_length = np.sum(dot_data['6'].values[0])
+	
 	y_length = args.y_axis_length
 
 	main(args.read_txt_file, dot_data, args.read_csv_file, 
