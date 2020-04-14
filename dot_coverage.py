@@ -112,7 +112,9 @@ def thicker_spines(ax, all_spines):
 
 
 def strip_ticks(ax):
-	ax.axis('off')
+	ax.set_xticks([])
+	ax.set_yticks([])
+	ax = thicker_spines(ax, True)
 	return ax
 
 
