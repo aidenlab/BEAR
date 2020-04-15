@@ -48,6 +48,24 @@ name_key = pd.DataFrame({
 	'SARS-CoV-2']
 	})
 
+def fill(f_txt):
+	cov_pd = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
+	if len(cov_pd.index) == 0:
+		return None
+
+	raw_cov_data = np.zeros((len(cov_pd.index), 2))
+	raw_cov_data[:,0] = cov_pd['second'].values
+	raw_cov_data[:,1] = cov_pd['third'].values
+	max_cover = int(np.max(raw_cov_data[:,0]))
+
+	if raw_cov_data.shape[0] == max_cover:
+		return raw_cov_data
+
+	cov_data = np.zeros((max_cover, 2))
+	cov_data[:,0] = np.arange(1, max_cover+1)
+	cov_data[np.isin(cov_data[:,0], raw_cov_data[:,0]),1] = raw_cov_data[:,1]
+
+	return cov_data
 
 def thicker_spines(ax, all_spines):
 	'''Makes spines of axes thicker.
@@ -244,14 +262,7 @@ def plot(f_txt, dot_data, f_csv, y_length, write_file):
 	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(20.75, 12), 
 		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 9.75]})
 
-	cov_pd = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
-	if len(cov_pd.index) == 0:
-		cov_data = None
-	else:
-		cov_data = np.zeros((np.max(cov_pd['second'].values), 2))
-		cov_data[:,0] = cov_pd['second'].values
-		cov_data[:,1] = cov_pd['third'].values
-
+	cov_data = fill(f_txt)
 	axs[0][0] = plot_coverage(axs[0][0], cov_data)
 	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, y_length)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
