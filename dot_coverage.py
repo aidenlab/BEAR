@@ -107,12 +107,12 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
 		ax_diagnostic.text(.4, .70, "Test Result: Positive", fontweight='bold')
-		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black', fontweight='bold')
-		ax_diagnostic.text(.4, .11, "in the sample", color='black', fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black')#, fontweight='bold')
+		ax_diagnostic.text(.4, .11, "in the sample", color='black')#, fontweight='bold')
 	else:
 		ax_diagnostic.text(.4, .70, "Test Result: Negative", fontweight='bold')
-		ax_diagnostic.text(.4, .4, "SARS-COV2 was not detected", color='black', fontweight='bold')
-		ax_diagnostic.text(.4, .11, "in the the sample", color='black', fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-COV2 was not detected", color='black')#, fontweight='bold')
+		ax_diagnostic.text(.4, .11, "in the the sample", color='black')#, fontweight='bold')
 
 	#Plot alignment bar chart
 	def new_labels(new_name, perc):
@@ -120,7 +120,8 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 
 	align_data['new'] = align_data.apply(lambda row : new_labels(row['new'], 
 							row['percentage']), axis = 1)
-	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color=col, legend=False)
+	align_data.plot(kind='barh', x='new', y='percentage', ax=ax_align, color=col, 
+		legend=False, fontsize=16)
 	
 	#Diagnostic axis limits
 	ax_diagnostic.set_xlim(0,1)
@@ -148,14 +149,12 @@ def plot_coverage(ax_coverage, cov_data):
 	Outputs: ax_coverage- coverage track axis
 	'''
 	#Coverage track axis style
-	ax_coverage.set_yscale('log')
 	ax_coverage.set_ylabel("Coverage", labelpad=10, fontweight='bold')
 	ax_coverage.spines['right'].set_visible(False)
 	ax_coverage.spines['top'].set_visible(False)
-	ax_coverage.spines['bottom'].set_position(('axes', 0))#'zero')
+	ax_coverage.spines['bottom'].set_position(('axes', 0))
 	ax_coverage = thicker_spines(ax_coverage, False)
 	
-	print(cov_data)
 	if cov_data is None:
 		return strip_ticks(ax_coverage)
 	
@@ -165,14 +164,16 @@ def plot_coverage(ax_coverage, cov_data):
 	#Coverage track tick marks and limits
 	ax_coverage.set_xlim(0, np.max(cov_data[:,1]))
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
-	t_coverage = [0, int(math.ceil(coverage_max/ 100.0)) * 100]
-	t_log_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
-	#ax_coverage.set_yticks(t_coverage)
-	ax_coverage.set_yticks(t_log_coverage)
-	ax_coverage.set_yticklabels(t_log_coverage, fontdict={'fontweight':'bold'})
+	if args.log_scale:
+		ax_coverage.set_yscale('log')
+		t_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
+	else:
+		t_coverage = [0, int(math.ceil(coverage_max/ 100.0)) * 100]
+		ax_coverage.spines['bottom'].set_position('zero')
+	ax_coverage.set_yticks(t_coverage)
+	ax_coverage.set_yticklabels(t_coverage, fontdict={'fontweight':'bold'})
 	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-	#ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
-	ax_coverage.spines['left'].set_bounds(t_log_coverage[0], t_log_coverage[1])
+	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
 
 	return ax_coverage
 
@@ -207,6 +208,8 @@ def plot_dot_plot(ax_dot, dot_data, y_length):
                      row['2'], row['3'], row['upto_offset']), axis = 1)
 
 	#Dot plot tick marks and limits
+	if args.crop_y:
+		y_length = np.sum(dot_data['1'].values)
 	x_length = np.sum(dot_data['6'].values[0])
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
@@ -238,8 +241,8 @@ def plot(f_txt, dot_data, f_csv, y_length, write_file):
 			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
 	'''
-	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(22, 12), 
-		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 11]})
+	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(20.75, 12), 
+		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 9.75]})
 
 	cov_pd = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
 	if len(cov_pd.index) == 0:
@@ -265,28 +268,34 @@ if __name__ == "__main__":
 	'''
 	Example usage:
 	python pared_dot_coverage.py ".txt file for coverage" ".paf file for dot plot" ".csv for alignment" 
-		"y axis length" "destination for plots"
+		"y axis length" "destination for plots" "-c flag to cut out unaligned contigs" "-l flag for log scale coverage track"
 	python pared_dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf stats.csv 29903 covid_plots 
 	'''
 	parser = argparse.ArgumentParser(description='Plot histogram.')
-	parser.add_argument('read_txt_file', metavar='rf_txt', type=str,
+	parser.add_argument('read_txt_file', type=str,
                      help='.txt file to read')
-	parser.add_argument('read_paf_file', metavar='rf_paf', type=str,
+	parser.add_argument('read_paf_file', type=str,
                      help='.paf file to read')
-	parser.add_argument('read_csv_file', metavar='rf_csv', type=str,
+	parser.add_argument('read_csv_file', type=str,
                      help='.csv file to read')
 
-	parser.add_argument('y_axis_length', metavar='y_length', type=int, 
+	parser.add_argument('y_axis_length', type=int, 
                      help='y axis length')
 
-	parser.add_argument('write_file', metavar='wf', type=str,
+	parser.add_argument('write_file', type=str,
                      help='png/svg files to write')
+
+	parser.add_argument('-c', '--crop_y', action='store_true', 
+    				help="crop dot plot y axis")
+	parser.add_argument('-l', '--log_scale', action='store_true', 
+    				help="log scale coverage track")
 
 	args = parser.parse_args()
 
 	col_names = [str(i) for i in range(18)]
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
 	y_length = args.y_axis_length
+	crop = True
 
 	plot(args.read_txt_file, dot_data, args.read_csv_file, 
 		y_length, args.write_file)
