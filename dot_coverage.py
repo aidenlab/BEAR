@@ -149,7 +149,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_align.set_xlim(0,100)
 	ax_align.set_xticks([0, 25, 50, 75, 100])
 	ax_align.set_xticklabels([0, 25, 50, 75, 100], fontdict={'fontweight':'bold'})
-	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)
+	ax_align.tick_params(axis="y",direction="in", left="true", pad=-5)#, length=0)
 	plt.setp(ax_align.get_yticklabels(), ha="left")
 	ax_align.set_ylabel('')
 	
@@ -177,10 +177,10 @@ def plot_coverage(ax_coverage, cov_data):
 		return strip_ticks(ax_coverage)
 	
 	#Make coverage track
-	ax_coverage.stackplot(cov_data[:,0], cov_data[:,1], color=col, linewidth=.01)
+	ax_coverage.stackplot(cov_data[:,0], cov_data[:,1], color=col, linewidth=.001)
 
 	#Coverage track tick marks and limits
-	ax_coverage.set_xlim(0, np.max(cov_data[:,1]))
+	ax_coverage.set_xlim(0, np.max(cov_data[:,0]))
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
 	if args.log_scale:
 		ax_coverage.set_yscale('log')
@@ -190,8 +190,12 @@ def plot_coverage(ax_coverage, cov_data):
 		ax_coverage.spines['bottom'].set_position('zero')
 	ax_coverage.set_yticks(t_coverage)
 	ax_coverage.set_yticklabels(t_coverage, fontdict={'fontweight':'bold'})
-	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)#, length=0)
 	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
+	ax_coverage.plot([38, 38],[0, 1700])
+	ax_coverage.plot([75, 75],[0, 1700])
+	ax_coverage.plot([36, 75],[500, 500])
+	print(ax_coverage.get_xlim())
 
 	return ax_coverage
 
@@ -244,6 +248,7 @@ def plot_dot_plot(ax_dot, dot_data, y_length):
 	ax_dot.set_yticks(t_yy_loc)
 	ax_dot.set_xticklabels(t_xx_loc, fontdict={'fontweight':'bold'})
 	ax_dot.set_yticklabels(t_yy_loc, fontdict={'fontweight':'bold'})
+	#ax_dot.tick_params(length=0)
 
 	return ax_dot
 
