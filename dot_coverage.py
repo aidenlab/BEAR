@@ -105,7 +105,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	ax_diagnostic.axis('off')
 
 	#Alignment axis style
-	ax_align.set_xlabel('% of Reads that Align to Betacoronaviruses', labelpad=10, fontweight='bold')
+	ax_align.set_xlabel('SARS-CoV-2 Breadth of Coverage (%)', labelpad=10, fontweight='bold')
 	ax_align = thicker_spines(ax_align, True)
 
 	#Read/format/sort alignment data
