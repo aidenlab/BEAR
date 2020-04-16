@@ -222,12 +222,14 @@ SAMTOBAM`
 		$LOAD_SAMTOOLS 
 		if $SAMTOOLS_CMD merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam
 		then
-			#rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_mapped*
+			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_mapped*
 		fi
+
 		if $SAMTOOLS_CMD markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
 		then
-			#rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 		fi
+		
 		$SAMTOOLS_CMD depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt
 		$SAMTOOLS_CMD stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep  ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
 MRKDUPS`
