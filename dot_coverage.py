@@ -156,7 +156,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	return ax_diagnostic, ax_align
 
 
-def plot_coverage(ax_coverage, cov_data):
+def plot_coverage(ax_coverage, cov_data, log_scale):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_coverage- coverage track axis
@@ -182,7 +182,7 @@ def plot_coverage(ax_coverage, cov_data):
 	#Coverage track tick marks and limits
 	ax_coverage.set_xlim(0, np.max(cov_data[:,0]))
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
-	if args.log_scale:
+	if log_scale:
 		ax_coverage.set_yscale('log')
 		t_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
 	else:
@@ -192,15 +192,11 @@ def plot_coverage(ax_coverage, cov_data):
 	ax_coverage.set_yticklabels(t_coverage, fontdict={'fontweight':'bold'})
 	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)#, length=0)
 	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
-	ax_coverage.plot([38, 38],[0, 1700])
-	ax_coverage.plot([75, 75],[0, 1700])
-	ax_coverage.plot([36, 75],[500, 500])
-	print(ax_coverage.get_xlim())
 
 	return ax_coverage
 
 
-def plot_dot_plot(ax_dot, dot_data, y_length):
+def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_dot- dot plot axis
@@ -230,7 +226,7 @@ def plot_dot_plot(ax_dot, dot_data, y_length):
                      row['2'], row['3'], row['upto_offset']), axis = 1)
 
 	#Dot plot tick marks and limits
-	if args.crop_y:
+	if crop_y:
 		y_length = np.sum(dot_data['1'].values)
 	x_length = np.sum(dot_data['6'].values[0])
 	ax_dot.set_xlim((0, x_length))
@@ -253,7 +249,7 @@ def plot_dot_plot(ax_dot, dot_data, y_length):
 	return ax_dot
 
 
-def plot(f_txt, dot_data, f_csv, y_length, write_file):
+def plot(f_txt, dot_data, f_csv, y_length, write_file, crop_y, log_scale):
 	'''Plots coverage track, dot plot, alignment bar graph, diagnostic symbol. Writes .pdf
 
 	Inputs: filled- np array data for coverage track
@@ -268,8 +264,8 @@ def plot(f_txt, dot_data, f_csv, y_length, write_file):
 		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 9.75]})
 
 	cov_data = fill(f_txt)
-	axs[0][0] = plot_coverage(axs[0][0], cov_data)
-	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, y_length)
+	axs[0][0] = plot_coverage(axs[0][0], cov_data, log_scale)
+	axs[1][0] = plot_dot_plot(axs[1][0], dot_data, y_length, crop_y)
 	axs[0][1], axs[1][1] = plot_alignment(axs[0][1], axs[1][1], f_csv)
 
 	fig.subplots_adjust(hspace=0.11, wspace = 0.05)	
@@ -311,8 +307,7 @@ if __name__ == "__main__":
 	col_names = [str(i) for i in range(18)]
 	dot_data = pd.read_csv(args.read_paf_file, names=col_names, delimiter='	') 
 	y_length = args.y_axis_length
-	crop = True
 
 	plot(args.read_txt_file, dot_data, args.read_csv_file, 
-		y_length, args.write_file)
+		y_length, args.write_file, args.crop_y, args.log_scale)
 
