@@ -222,13 +222,17 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 	def dot_plot(x1, x2, y1, y2, segment_offset,):
 		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
 
+	#dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
+    #                row['2'], row['3'], row['upto_offset']), axis = 1)
 	dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
-                     row['2'], row['3'], row['upto_offset']), axis = 1)
+					row['7'], row['8'], row['upto_offset']), axis = 1)
 
 	#Dot plot tick marks and limits
+	x_length = np.sum(dot_data['6'].values[0])
 	if crop_y:
 		y_length = np.sum(dot_data['1'].values)
-	x_length = np.sum(dot_data['6'].values[0])
+	else:
+		y_length = x_length
 	ax_dot.set_xlim((0, x_length))
 	ax_dot.set_ylim((0, y_length))
 	
