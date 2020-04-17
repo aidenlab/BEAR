@@ -85,6 +85,11 @@ def thicker_spines(ax, all_spines):
 
 
 def strip_ticks(ax):
+	'''Strips ticks from an axis object and formats spines.
+
+	Inputs: ax- matplot axis object
+	Outputs: ax- matplot axis object
+	'''
 	ax.set_xticks([])
 	ax.set_yticks([])
 	ax = thicker_spines(ax, True)
@@ -220,7 +225,8 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
 
 	def dot_plot(x1, x2, y1, y2, segment_offset,):
-		ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
+		#ax_dot.plot([x1, x2], [y1+segment_offset, y2+segment_offset], linewidth=3, color=col)
+		ax_dot.plot([x1, x2], [y1, y2], linewidth=3, color=col)
 
 	#dot_data.apply(lambda row : dot_plot(row['7'], row['8'],
     #                row['2'], row['3'], row['upto_offset']), axis = 1)
