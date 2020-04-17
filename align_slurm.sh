@@ -307,7 +307,7 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 CONTIG`
 
 echo "CONTIG_LENGTH=\$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | cut -f2 -d' ')" > ${WORK_DIR}/call_dotplot.sh
-echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${FINAL_DIR}/contig.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report" >> ${WORK_DIR}/call_dotplot.sh
+echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${FINAL_DIR}/contig.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report --crop_y" >> ${WORK_DIR}/call_dotplot.sh
 
 # need to wait for match alignment
 dependcontig="${dependmatchdone}:$jid"
