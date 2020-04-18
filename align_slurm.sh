@@ -205,7 +205,7 @@ SAMTOBAM`
     done
     
     ######################################################################
-    ##########SAM: merge, markdups, depth, stats
+    ##########SAM: merge, dedup, depth, stats
     ######################################################################
     jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
@@ -225,7 +225,7 @@ SAMTOBAM`
 			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_mapped*
 		fi
 
-		if $SAMTOOLS_CMD markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
+		if $SAMTOOLS_CMD markdup -r ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
 		then
 			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 		fi
