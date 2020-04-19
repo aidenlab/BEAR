@@ -21,9 +21,9 @@ then
 else
     printf "\n--- Installing Minicoda3 in to ${MINICONDA_INST_PATH} \n\n"
     # Installing Latest Miniconda3
-    curl -L -o ${INST_PATH}/miniconda3_install.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-    sh ${INST_PATH}/miniconda3_install.sh -f -b -p ${MINICONDA_INST_PATH}
-    rm ${INST_PATH}/miniconda3_install.sh
+    curl -sSL -o ${INST_PATH}/miniconda3_install.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh    
+    sh ${INST_PATH}/miniconda3_install.sh -bfp ${MINICONDA_INST_PATH}
+    rm -rf ${INST_PATH}/miniconda3_install.sh
     source ${MINICONDA_INST_PATH}/etc/profile.d/conda.sh
     conda config --set always_yes yes --set changeps1 no
     conda update -q conda
@@ -42,3 +42,4 @@ conda activate Polar_cond_env
 ${INST_PATH}/Polar/align_serial.sh -h
 cd ${INST_PATH}/Polar/test
 ${INST_PATH}/Polar/align_serial.sh
+conda deactivate
