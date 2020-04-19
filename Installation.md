@@ -2,11 +2,11 @@
 
 Page Contents:
 
-* [General](#1-general)
-* [Install Polar and requirements manually](#2-manual)
-* [Install Polar with installation script](#3-install-script)
-* [Install using an existing Conda installation](#4-conda)
-* [Running Polar with Docker/Singularity](#5-docker)
+* [General](#general)
+* [Install Polar and requirements manually](#install-polar-and-requirements-manually)
+* [Install Polar with installation script](#install-polar-with-installation-script)
+* [Install using an existing Conda installation](#install-using-an-existing-conda-installation)
+* [Running Polar with Docker/Singularity](#running-polar-with-dockersingularity)
 
 ## General
 
