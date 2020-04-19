@@ -46,7 +46,7 @@ You can install the Polar pipeline and all it's dependencies manually.
 
 ## Install Polar with installation script
 
-You can install the Polar pipeline and all it's dependencies in one go with a provided bash script.
+You can install the Polar pipeline and all it's dependencies in one go with a provided bash script, [Prepare_Polar_Conda_Env.sh](https://github.com/aidenlab/Polar/blob/master/Prepare_Polar_Conda_Env.sh) .
 
 The script performs the following:
 
@@ -55,7 +55,9 @@ The script performs the following:
 * Creates a conda environment with all the dependencies
 * Runs a test scenario
 
-If the script is called without any parameters it will create two directories, `Polar` and `miniconda3_polar` in the current Folder for the pipeline and the Miniconda installation. Calling with a parameter it will install at the specified location. The following example will install Polar pipeline in `Polar_install` folder under the home directory.
+If the script is called without any parameters it will create two directories, `Polar` and `miniconda3_polar` in the current Folder for the pipeline and the Miniconda installation. Calling with a parameter it will install at the specified location. 
+
+The following example will install Polar pipeline in `Polar_install` folder under the home directory.
 
     curl -sl https://raw.githubusercontent.com/aidenlab/Polar/master/Prepare_Polar_Conda_Env.sh?token=AID67XLJCB6IR2322CZNQYS6UUJX4 | bash -s -- ~/Polar_install
 
