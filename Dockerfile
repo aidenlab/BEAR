@@ -1,19 +1,30 @@
-FROM conda/miniconda3:latest
+FROM debian:latest as builder
 
+RUN apt-get update && apt-get install -y \
+    openssh-client \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+COPY github_key .
+RUN eval $(ssh-agent) && \
+    ssh-add github_key && \
+    ssh-keyscan -H github.com >> /etc/ssh/ssh_known_hosts && \
+    git clone git@github.com:aidenlab/Polar.git /opt/Polar
 
-USER root
+FROM conda/miniconda3:latest    
+LABEL maintainer="weisz@bcm.edu"
 
-RUN conda config --add channels bioconda && conda config --add channels conda-forge && conda create -y -n Polar_cond_env python=3.7 numpy pip bwa minimap2 gawk samtools matplotlib pandas python-pdfkit megahit && conda init bash
-RUN conda config --set auto_activate_base false && cp ~/.bashrc /etc/profile.d/polar.sh && echo "conda activate Polar_cond_env\nPATH=/Polar:\$PATH" >>/etc/profile.d/polar.sh
+RUN useradd -u 999 --user-group --system --create-home --no-log-init --shell /bin/bash polar
+COPY --from=builder /opt/Polar /opt/Polar
+RUN conda config --set always_yes yes --set changeps1 no && conda update -q conda && conda init bash
+RUN conda env create -n Polar_cond_env -f /opt/Polar/Polar_conda_env.yml
+RUN echo "source /usr/local/etc/profile.d/conda.sh\nPATH=/opt/Polar:\$PATH\nconda activate Polar_cond_env" >>/etc/profile.d/polar.sh
 RUN conda clean --all -f -y
-RUN useradd -u 999 --user-group --system --create-home --no-log-init appuser
-USER appuser
 
-#RUN git clone https://github.com/aidenlab/Polar.git
+
+ENV BASH_ENV "/etc/profile.d/polar.sh"
 
 SHELL ["/bin/bash", "--login", "-c"]
-COPY . /Polar
-ENV PATH=/Polar:$PATH
+
+ENV PATH=/opt/Polar:$PATH
 WORKDIR /fastq
-#ENTRYPOINT align_serial.sh "$0" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
-ENTRYPOINT ["/bin/bash", "-l", "-c", "align_serial.sh \"$@\"" ,"align_serial.sh"]
+ENTRYPOINT ["align_serial.sh"]

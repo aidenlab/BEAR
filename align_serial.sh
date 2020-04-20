@@ -187,7 +187,7 @@ do
 done
 
 # Produce contigs - this can happen concurrently with alignment
-megahit -1 $read1filescomma -2 $read2filescomma -m 750 -o ${WORK_DIR}/contigs &> ${LOG_DIR}/contig.out
+megahit -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs -m 750 --min-contig-len 100  &> ${LOG_DIR}/contig.out
 mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print $2}')
 echo "(-: Done with contigs" 
@@ -199,7 +199,7 @@ then
     touch ${WORK_DIR}/contig.paf
 fi
 echo "(-: Done with pairwise comparison" 
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report  &> ${LOG_DIR}/dotplot.out
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report --crop_y &> ${LOG_DIR}/dotplot.out
 
 echo "(-: Done with dotplot"
 echo "(-: Pipeline completed, check ${FINAL_DIR} for the report"
