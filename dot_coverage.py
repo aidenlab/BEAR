@@ -67,6 +67,7 @@ def fill(f_txt):
 
 	return cov_data
 
+
 def thicker_spines(ax, all_spines):
 	'''Makes spines of axes thicker.
 
@@ -116,6 +117,8 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	#Read/format/sort alignment data
 	try:
 		align_data = pd.read_csv(f_csv)
+		if len(align_data.index) == 0:
+			return strip_ticks(ax_diagnostic), strip_ticks(ax_align)
 	except:
 		return strip_ticks(ax_diagnostic), strip_ticks(ax_align)
 	
