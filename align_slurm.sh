@@ -273,7 +273,7 @@ INDEXSAM`
     done
     slurm_depend_merge="#SBATCH -d $dependmerge"
 else
-    dependmatchdone="afterok:"
+    dependmatchdone="afterok"
     slurm_depend_merge=""
 fi
 
@@ -289,7 +289,7 @@ echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
 echo "$slurm_depend_merge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0; onisland=0}\$3>0{if (!onisland){onisland=1; island_start=\$2}}\$3==0{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}}  if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0; onisland=0}\$3>0{if (!onisland){onisland=1; island_start=\$2}}\$3==0{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}}  if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 jid=`sbatch < "$WORK_DIR"/collect_stats.sh`
@@ -316,6 +316,7 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 
 	$LOAD_MEGAHIT
 	echo "Running $MEGAHIT_CMD -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs"
+	rm -rf ${WORK_DIR}/contigs
 	$MEGAHIT_CMD -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs
 	mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG`
@@ -331,7 +332,7 @@ dependcontig="${dependmatchdone}:$jid"
 ########## Minimap2 - after contig and alignment
 ######################################################################
 ######################################################################
-
+echo "depend contig $dependcontig"
 jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH --partition=$QUEUE_X86 
