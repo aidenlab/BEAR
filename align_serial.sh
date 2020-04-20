@@ -29,7 +29,7 @@ MATCH_REF="${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta"
 MATCH_NAME=$(echo $MATCH_REF | sed 's:.*/::' | rev | cut -c7- | rev )
 
 # Usage and commands
-usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jrh"
+usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jkrh"
 dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
   [TOP_DIR]/fastq must contain the fastq files"
 threadsHelp="* [THREADS] is number of threads for BWA alignment"
@@ -44,6 +44,7 @@ printHelpAndExit() {
     echo -e "$threadsHelp"
     echo -e "$indexHelp"
     echo -e "$reducedHelp"
+    echo -e "$stageHelp"
     echo "$helpHelp"
     exit "$1"
 }
