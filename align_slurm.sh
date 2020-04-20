@@ -271,8 +271,10 @@ MRKDUPS`
 INDEXSAM`
 	fi
     done
+    slurm_depend_merge="#SBATCH -d $dependmerge"
 else
     dependmatchdone="afterok:"
+    slurm_depend_merge=""
 fi
 
 echo "#!/bin/bash -l" > "$WORK_DIR"/collect_stats.sh
@@ -284,7 +286,7 @@ echo "#SBATCH -n 1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -c 1" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --mem=200" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
-echo "#SBATCH -d $dependmerge"  >> "$WORK_DIR"/collect_stats.sh 
+echo "$slurm_depend_merge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
 echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0; onisland=0}\$3>0{if (!onisland){onisland=1; island_start=\$2}}\$3==0{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}}  if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
@@ -310,7 +312,7 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH -c 1
 	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1
-	#SBATCH -d $dependmerge
+	$slurm_depend_merge
 
 	$LOAD_MEGAHIT
 	echo "Running $MEGAHIT_CMD -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs"
