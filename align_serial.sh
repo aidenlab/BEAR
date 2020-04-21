@@ -187,7 +187,7 @@ echo "(-: Done with alignment"
 echo "label,percentage" > ${WORK_DIR}/stats.csv
 for f in ${WORK_DIR}/*/aligned/depth_per_base.txt
 do
-    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{count=0; onisland=0}$3>0{if (!onisland){onisland=1; island_start=$2}}$3==0{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} if (NR==0){NR=1} printf("%s,%0.02f\n", fname, count*100/NR) }' $f >> ${WORK_DIR}/stats.csv
+    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{count=0; onisland=0}$3>5{if (!onisland){onisland=1; island_start=$2}}$3<=5{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} if (NR==0){NR=1} printf("%s,%0.02f\n", fname, count*100/NR) }' $f >> ${WORK_DIR}/stats.csv
 done
 
 # Produce contigs - this can happen concurrently with alignment
@@ -203,8 +203,10 @@ then
     echo "!*** Pairwise alignment by minimap2 failed."
     touch ${WORK_DIR}/contig.paf
 fi
-echo "(-: Done with pairwise comparison" 
-python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report --crop_y &> ${LOG_DIR}/dotplot.out
+echo "(-: Done with pairwise comparison"
+python ${PIPELINE_DIR}/remove_strays.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt 
+python ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt ${WORK_DIR}/contig.paf ${WORK_DIR}/stats.csv $CONTIG_LENGTH ${FINAL_DIR}/report &> ${LOG_DIR}/dotplot.out
+
 
 echo "(-: Done with dotplot"
 echo "(-: Pipeline completed, check ${FINAL_DIR} for the report"
