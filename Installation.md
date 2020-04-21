@@ -64,7 +64,7 @@ The following example will install Polar pipeline in `Polar_install` folder unde
 Calling the pipeline then will require initializig conda environment first:
 
     source ~/Polar_install/miniconda3_polar/etc/profile.d/conda.sh
-    conda activate Polar_cond_env
+    conda activate Polar_conda_env
     ~/Polar_install/Polar/align_serial.sh -h
     ...
     conda deactivate
@@ -79,11 +79,11 @@ If you allredy have a Anaconda/Miniconda instllation then you can create a conda
 
 2. Create the conda environment
 
-        conda env create -n Polar_cond_env -f ./Polar/Polar_conda_env.yml
+        conda env create -n Polar_conda_env -f ./Polar/Polar_conda_env.yml
 
 3. Activate the conda environment and execute a Polar test
 
-        conda activate Polar_cond_env    
+        conda activate Polar_conda_env    
         cd ./Polar/test
         ../align_serial.sh
         conda deactivate
@@ -92,8 +92,9 @@ If you allredy have a Anaconda/Miniconda instllation then you can create a conda
 
 Running the Polar pipeline with the provided test using Docker
 
-    docker run aidenlab/polar:latest -d /opt/Polar/test
+    docker run -rm aidenlab/polar:latest -d /tmp/test
 
-or with Singularity
+or with Singularity (we clone the repository only for the test data)
 
-    singularity run docker://aidenlab/polar:latest -d /opt/Polar/test
+    git clone https://github.com/aidenlab/Polar.git
+    singularity run docker://aidenlab/polar:latest --pwd /fastq -B ./Polar/test:/fastq
