@@ -29,8 +29,8 @@ LOAD_PYTHON=""
 PYTHON_CMD="/gpfs0/apps/x86/anaconda3/bin/python"
 
 ## Queues
-QUEUE="commons"
-QUEUE_X86="x86"
+QUEUE="weka"
+QUEUE_X86="weka"
 
 ## Threads
 threads=8
@@ -42,14 +42,18 @@ PIPELINE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BETACORONA_REF_DIR="${PIPELINE_DIR}/betacoronaviruses/*/*/*.fasta"
 BETACORONA_SMALL="${PIPELINE_DIR}/betacoronaviruses/close/*/*.fasta \
 		  ${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta" 
+# Viral match - assumes only one directory under "match" 
+MATCH_REF="${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta"
+MATCH_NAME=$(echo $MATCH_REF | sed 's:.*/::' | rev | cut -c7- | rev )
 
 # Usage and commands
-usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jrh"
+usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jkrh"
 dirHelp="* [TOP_DIR] is the top level directory (default \"$TOP_DIR\")\n\
   [TOP_DIR]/fastq must contain the fastq files"
 threadsHelp="* [THREADS] is the number of threads for BWA alignment"
 indexHelp="* -j produce index file for aligned files"
 reducedHelp="* -r reduced set for alignment"
+stageHelp="* -k start pipeline after alignment"
 helpHelp="* -h: print this help and exit"
 
 printHelpAndExit() {
@@ -58,11 +62,12 @@ printHelpAndExit() {
     echo -e "$threadsHelp"
     echo -e "$indexHelp"
     echo -e "$reducedHelp"
+    echo -e "$stageHelp"
     echo "$helpHelp"
     exit "$1"
 }
 
-while getopts "d:t:hrj" opt; do
+while getopts "d:t:hrjk" opt; do
     case $opt in
 	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
@@ -71,6 +76,7 @@ while getopts "d:t:hrj" opt; do
 	t) threads=$OPTARG 
 	   threadstring="-t $threads"
 	   ;;
+	k) afteralignment=1 ;;
 	[?]) printHelpAndExit 1;;
     esac
 done
@@ -129,34 +135,37 @@ WORK_DIR=${TOP_DIR}/work
 LOG_DIR=${TOP_DIR}/log
 FINAL_DIR=${TOP_DIR}/final
 
-if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"; exit 1; fi
-if ! mkdir "${LOG_DIR}"; then echo "***! Unable to create ${LOG_DIR}! Exiting"; exit 1; fi
-if ! mkdir "${FINAL_DIR}"; then echo "***! Unable to create ${FINAL_DIR}! Exiting"; exit 1; fi
 
-for REFERENCE in $REFERENCES
-do
-    ######################################################################
-    ########## Align 
-    ######################################################################
-    REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
+if [[ "$afteralignment" -ne 1 ]]
+then
+    if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"; exit 1; fi
+    if ! mkdir "${LOG_DIR}"; then echo "***! Unable to create ${LOG_DIR}! Exiting"; exit 1; fi
+    if ! mkdir "${FINAL_DIR}"; then echo "***! Unable to create ${FINAL_DIR}! Exiting"; exit 1; fi
+    
+    for REFERENCE in $REFERENCES
+    do
+        ######################################################################
+        ########## Align 
+        ######################################################################
+	REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
 
-    echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
+	echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
 
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
+	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
+	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
+	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
 
-    dependsort="afterok"
+	dependsort="afterok"
 
-    for ((i = 0; i < ${#read1files[@]}; ++i)); do
-        file1=${read1files[$i]}
-        file2=${read2files[$i]}
+	for ((i = 0; i < ${#read1files[@]}; ++i)); do
+            file1=${read1files[$i]}
+            file2=${read2files[$i]}
 
-	FILE=$(basename ${file1%$READ1_STR*})
-	ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
-
-        # Align reads
-	jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
+	    FILE=$(basename ${file1%$READ1_STR*})
+	    ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
+	    
+            # Align reads
+	    jid=`sbatch <<- ALGNR | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p $QUEUE
 		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/align-%j.out
@@ -179,12 +188,12 @@ do
 			echo "(-: Mem align of ${ALIGNED_FILE}.sam done successfully"             
 		fi
 ALGNR`
-	dependalign="afterok:$jid"
+	    dependalign="afterok:$jid"
 
-        ######################################################################
-        ##########SAM: fixmate, sort
-        ######################################################################
-	jid=`sbatch <<- SAMTOBAM | egrep -o -e "\b[0-9]+$"
+            ######################################################################
+            ##########SAM: fixmate, sort
+            ######################################################################
+	    jid=`sbatch <<- SAMTOBAM | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p $QUEUE
 		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/sam2bam-%j.out
@@ -201,13 +210,13 @@ ALGNR`
 		$SAMTOOLS_CMD sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"
 
 SAMTOBAM`
-	dependsort="${dependsort}:$jid"
-    done
+	    dependsort="${dependsort}:$jid"
+	done
     
-    ######################################################################
-    ##########SAM: merge, dedup, depth, stats
-    ######################################################################
-    jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
+        ######################################################################
+        ##########SAM: merge, dedup, depth, stats
+        ######################################################################
+	jid=`sbatch <<- MRKDUPS | egrep -o -e "\b[0-9]+$"
 		#!/bin/bash -l
 		#SBATCH -p $QUEUE
 		#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/mrkdups-%j.out
@@ -225,7 +234,7 @@ SAMTOBAM`
 			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_mapped*
 		fi
 
-		if $SAMTOOLS_CMD markdup -r ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
+		if $SAMTOOLS_CMD markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam
 		then
 			rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 		fi
@@ -233,18 +242,18 @@ SAMTOBAM`
 		$SAMTOOLS_CMD depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt
 		$SAMTOOLS_CMD stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep  ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
 MRKDUPS`
-    dependmerge="afterok:$jid"
+	dependmerge="afterok:$jid"
 
-    if [[ "$REFERENCE" == *match* ]]
-    then
-	MATCH_REF=${REFERENCE}
-	MATCH_NAME=${REFERENCE_NAME}
-	dependmatchdone="afterok:$jid"
-    fi
+	if [[ "$REFERENCE" == *match* ]]
+	then
+	    MATCH_REF=${REFERENCE}
+	    MATCH_NAME=${REFERENCE_NAME}
+	    dependmatchdone="afterok:$jid"
+	fi
 
-    if [ -n "$produceIndex" ]
-    then
-	jid=`sbatch <<- INDEXSAM | egrep -o -e "\b[0-9]+$"
+	if [ -n "$produceIndex" ]
+	then
+	    jid=`sbatch <<- INDEXSAM | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH -p $QUEUE
 	#SBATCH -o ${WORK_DIR}/${REFERENCE_NAME}/debug/indexsam-%j.out
@@ -260,8 +269,13 @@ MRKDUPS`
 	$SAMTOOLS_CMD index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
 
 INDEXSAM`
-    fi
-done
+	fi
+    done
+    slurm_depend_merge="#SBATCH -d $dependmerge"
+else
+    dependmatchdone="afterok"
+    slurm_depend_merge=""
+fi
 
 echo "#!/bin/bash -l" > "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -p $QUEUE" >> "$WORK_DIR"/collect_stats.sh
@@ -272,10 +286,10 @@ echo "#SBATCH -n 1 " >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH -c 1" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --mem=200" >> "$WORK_DIR"/collect_stats.sh
 echo "#SBATCH --threads-per-core=1 " >> "$WORK_DIR"/collect_stats.sh
-echo "#SBATCH -d $dependmerge"  >> "$WORK_DIR"/collect_stats.sh 
+echo "$slurm_depend_merge"  >> "$WORK_DIR"/collect_stats.sh 
 echo "echo \"label,percentage\" > $WORK_DIR/stats.csv " >> "$WORK_DIR"/collect_stats.sh
 echo "for f in $WORK_DIR/*/aligned/depth_per_base.txt; do"  >> "$WORK_DIR"/collect_stats.sh
-echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0}\$3>0{count++}END{if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
+echo  "awk -v fname=\$(basename \${f%%/aligned*}) 'BEGIN{count=0; onisland=0}\$3>5{if (!onisland){onisland=1; island_start=\$2}}\$3<=5{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=\$2; if (island_end-island_start>=50){count=count+island_end-island_start}}  if (NR==0){NR=1} printf(\"%s,%0.02f\n\", fname, count*100/NR)}' \$f >> ${WORK_DIR}/stats.csv"  >> "$WORK_DIR"/collect_stats.sh 
 echo "	done "  >> "$WORK_DIR"/collect_stats.sh
 
 jid=`sbatch < "$WORK_DIR"/collect_stats.sh`
@@ -298,16 +312,19 @@ jid=`sbatch <<- CONTIG | egrep -o -e "\b[0-9]+$"
 	#SBATCH -c 1
 	#SBATCH --mem-per-cpu=10G
 	#SBATCH --threads-per-core=1
-	#SBATCH -d $dependmerge
+	$slurm_depend_merge
 
 	$LOAD_MEGAHIT
 	echo "Running $MEGAHIT_CMD -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs"
+	rm -rf ${WORK_DIR}/contigs
 	$MEGAHIT_CMD -1 $read1filescomma -2 $read2filescomma -o ${WORK_DIR}/contigs
 	mv ${WORK_DIR}/contigs/final.contigs.fa ${FINAL_DIR}/.
 CONTIG`
 
+
 echo "CONTIG_LENGTH=\$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | cut -f2 -d' ')" > ${WORK_DIR}/call_dotplot.sh
-echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${FINAL_DIR}/contig.paf ${WORK_DIR}/stats.csv \$CONTIG_LENGTH ${FINAL_DIR}/report --crop_y" >> ${WORK_DIR}/call_dotplot.sh
+echo "$PYTHON_CMD ${PIPELINE_DIR}/remove_strays.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt" >> ${WORK_DIR}/call_dotplot.sh
+echo "$PYTHON_CMD ${PIPELINE_DIR}/dot_coverage.py ${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt ${FINAL_DIR}/contig.paf ${WORK_DIR}/stats.csv  \$CONTIG_LENGTH ${FINAL_DIR}/report " >> ${WORK_DIR}/call_dotplot.sh
 
 # need to wait for match alignment
 dependcontig="${dependmatchdone}:$jid"
@@ -317,7 +334,7 @@ dependcontig="${dependmatchdone}:$jid"
 ########## Minimap2 - after contig and alignment
 ######################################################################
 ######################################################################
-
+echo "depend contig $dependcontig"
 jid=`sbatch <<- MINIMAP | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	#SBATCH --partition=$QUEUE_X86 
