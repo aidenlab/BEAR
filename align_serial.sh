@@ -16,7 +16,7 @@
 ## BWA; Samtools; Minimap2; Megahit; Python
 
 ## Threads
-threads=1
+threads=4
 
 ### VARIABLES: Automatically set
 TOP_DIR=$(pwd)
@@ -95,8 +95,8 @@ else
     fi
 fi
 
-read1files=()
-read2files=()
+declare -a read1files=()
+declare -a read2files=()
 for i in ${read1}
 do
     ext=${i#*$READ1_STR}
@@ -119,68 +119,77 @@ else
     REFERENCES=$BETACORONA_REF_DIR
 fi
 
-WORK_DIR=${TOP_DIR}/work
-LOG_DIR=${TOP_DIR}/log
-FINAL_DIR=${TOP_DIR}/final
+export WORK_DIR=${TOP_DIR}/work
+export LOG_DIR=${TOP_DIR}/log
+export FINAL_DIR=${TOP_DIR}/final
+
+Align_Reference ()
+{
+    REFERENCE=$1
+    
+    ######################################################################
+    ########## Align 
+    ######################################################################
+    REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
+
+    echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
+
+    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
+    
+    for ((i = 0; i < ${#read1files[@]}; ++i)); do
+            file1=${read1files[$i]}
+            file2=${read2files[$i]}
+        
+        FILE=$(basename ${file1%$read1str})
+        ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
+        
+            # Align reads
+        bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
+
+        # Samtools fixmate and sort, output as BAM
+        samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
+        samtools sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"  2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
+    done
+
+        # Merge sorted BAMs
+    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
+    then
+        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 
+        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
+        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*"_mapped"*bam  
+    fi
+    
+    if samtools markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/dedup.out
+    then
+        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+    fi
+
+    samtools depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/coverage.out
+    
+        # In case you want to visualize the bams, index them. 
+    if [ -n "$produceIndex" ]
+    then
+        samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
+    fi
+
+        # Statistics 
+    samtools stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
+}
 
 if [[ "$afteralignment" -ne 1 ]]
 then
     if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"; exit 1; fi
     if ! mkdir "${LOG_DIR}"; then echo "***! Unable to create ${LOG_DIR}! Exiting"; exit 1; fi
     if ! mkdir "${FINAL_DIR}"; then echo "***! Unable to create ${FINAL_DIR}! Exiting"; exit 1; fi
-
-    for REFERENCE in $REFERENCES
-    do
-        ######################################################################
-        ########## Align 
-        ######################################################################
-	REFERENCE_NAME=$(echo $REFERENCE | sed 's:.*/::' | rev | cut -c7- | rev )
-
-	echo -e "(-: Aligning files matching $FASTQ_DIR\n to genome $REFERENCE_NAME"
-
-	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
-	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
-	if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
-	
-	for ((i = 0; i < ${#read1files[@]}; ++i)); do
-            file1=${read1files[$i]}
-            file2=${read2files[$i]}
-	    
-	    FILE=$(basename ${file1%$read1str})
-	    ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
-	    
-            # Align reads
-	    bwa mem -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
-
-	    # Samtools fixmate and sort, output as BAM
-	    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
-	    samtools sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"  2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
-	done
-
-        # Merge sorted BAMs
-	if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
-	then
-	    rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 
-	    rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
-	    rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*"_mapped"*bam  
-	fi
     
-	if samtools markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/dedup.out
-	then
-	    rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
-	fi
-
-	samtools depth -a ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/coverage.out
-	
-        # In case you want to visualize the bams, index them. 
-	if [ -n "$produceIndex" ]
-	then
-	    samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
-	fi
-
-        # Statistics 
-	samtools stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | grep ^SN | cut -f 2- > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.txt
+    export -f Align_Reference
+    for REFERENCE in $REFERENCES        
+    do
+        Align_Reference $REFERENCE &
     done
+    wait
 fi
 echo "(-: Done with alignment" 
 # Gather alignment statistics (coverage %)
