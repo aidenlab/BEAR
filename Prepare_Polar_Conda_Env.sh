@@ -33,12 +33,12 @@ printf "\n--- Creating Polar Conda environment. \n\n"
 # Cloning Polar pipeline form github repository
 git clone https://github.com/aidenlab/Polar.git ${INST_PATH}/Polar
 
-conda env create -n Polar_cond_env -f ${INST_PATH}/Polar/Polar_conda_env.yml
+conda env create -n Polar_conda_env -f ${INST_PATH}/Polar/Polar_conda_env.yml
 
 # Run Polar Pipeline with test data
 printf "\n--- Running Polar pipeline using example test data.\n\n"
 #source ${MINICONDA_INST_PATH}/etc/profile.d/conda.sh
-conda activate Polar_cond_env
+conda activate Polar_conda_env
 ${INST_PATH}/Polar/align_serial.sh -h
 cd ${INST_PATH}/Polar/test
 ${INST_PATH}/Polar/align_serial.sh
