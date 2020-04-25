@@ -1,6 +1,7 @@
 # Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
+# Contents
 * [Installation](#installation)
    * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
    * [Install Polar with installation script](#install-polar-with-installation-script)
@@ -12,6 +13,7 @@
    * [Usage and options](#usage-and-options)
    * [Repository](#repository)
    * [Setup and output folders](#setup-and-output-folders)
+* [Contributing](#contributing)
 
 # Installation
 
@@ -211,3 +213,6 @@ are examples of a positive report (A) and a negative report (B).
 ![Report images](images/pos_neg_report.png)
 
 
+# Contributing
+
+We welcome contributions! Please have a look [here](Contributing.md) on how you can help.
