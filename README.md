@@ -102,7 +102,8 @@ a folder labeled "Library1" and it should contain one subfolder labeled
 The fastqs can be zipped or unzipped, and there can be multiple pairs.
 
 The pipeline will create folders "work", "log", and "final" under "Library1".
-The "final" folder will contain the assembly fasta and the PDF report. 
+The "final" folder will contain the assembly fasta and the PDF report. Below 
+are examples of a positive report (A) and a negative report (B). 
 
 
 ![Report images](images/pos_neg_report.png)
