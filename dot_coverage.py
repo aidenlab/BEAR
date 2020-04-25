@@ -222,8 +222,8 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 		return strip_ticks(ax_dot)
 	
 	#Make dot plot
-	if y_length < 100000:
-		dot_data = dot_data.sort_values('7')
+	#if y_length < 100000:
+	#dot_data = dot_data.sort_values('7')
 	dot_data['cum_offset'] = dot_data['1'].cumsum()
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
 
@@ -294,7 +294,7 @@ if __name__ == "__main__":
 	Example usage:
 	python pared_dot_coverage.py ".txt file for coverage" ".paf file for dot plot" ".csv for alignment" 
 		"y axis length" "destination for plots" "-c flag to cut out unaligned contigs" "-l flag for log scale coverage track"
-	python pared_dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf stats.csv 29903 covid_plots 
+	python dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf stats.csv 29903 covid_plots 
 	'''
 	parser = argparse.ArgumentParser(description='Plot histogram.')
 	parser.add_argument('read_txt_file', type=str,
