@@ -1,7 +1,7 @@
 # Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
-# Contents
+# 
 * [Installation](#installation)
    * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
    * [Install Polar with installation script](#install-polar-with-installation-script)
