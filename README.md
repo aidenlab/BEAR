@@ -215,4 +215,4 @@ are examples of a positive report (A) and a negative report (B).
 
 # Contributing
 
-We welcome contributions! Please have a look [here](Contributing.md) on how you can help.
+We welcome contributions! Please have a look [here](CONTRIBUTING.md) on how you can help.
