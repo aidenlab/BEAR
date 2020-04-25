@@ -1,18 +1,19 @@
 # Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
-Page Contents:
-
-* [General](#general)
-* [Install Polar and requirements manually](#install-polar-and-requirements-manually)
-* [Install Polar with installation script](#install-polar-with-installation-script)
-* [Install using an existing Conda installation](#install-using-an-existing-conda-installation)
-* [Running Polar with Docker/Singularity](#running-polar-with-dockersingularity)
-* [Running Polar on a single machine](#running-polar-on-a-single-machine)
-* [Running Polar on SLURM](#running-polar-on-slurm)
+* [Installation](#installation)
+   * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
+   * [Install Polar with installation script](#install-polar-with-installation-script)
+   * [Install using an existing Conda installation](#install-using-an-existing-conda-installation)
+   * [Running Polar with Docker/Singularity](#running-polar-with-dockersingularity)
+   * [Running Polar on a single machine](#running-polar-on-a-single-machine)
+   * [Running Polar on SLURM](#running-polar-on-slurm)
 * [Detailed Guide](#detailed-guide)
+   * [Usage and options](#usage-and-options)
+   * [Repository](#repository)
+   * [Setup and output folders](#setup-and-output-folders)
 
-## General
+# Installation
 
 The Polar pipeline and all its dependencies are Linux based, typically running under Linux 
 operating system, preferably (but not necessarily) on a computer cluster. The included test 
