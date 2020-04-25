@@ -104,6 +104,9 @@ The fastqs can be zipped or unzipped, and there can be multiple pairs.
 The pipeline will create folders "work", "log", and "final" under "Library1".
 The "final" folder will contain the assembly fasta and the PDF report. 
 
+
+![Report images](images/pos_neg_report.png)
+
 ## SLURM variables
 
 Systems vary in their resources but we have tried our best to make it 
