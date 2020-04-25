@@ -10,8 +10,7 @@ def remove(cov_pd, number_list, wf):
 	zero_idx = np.where(number_list <= threshold)[0]
 
 	zero_idx = np.insert(zero_idx, 0, -1)
-	zero_idx = np.insert(zero_idx, zero_idx.shape[0], len(number_list)-1)
-
+	zero_idx = np.insert(zero_idx, zero_idx.shape[0], len(number_list))
 	
 	hole_length = np.ediff1d(zero_idx)
 	hole_loc = np.where(hole_length > length)[0]
@@ -41,5 +40,4 @@ if __name__ == "__main__":
 	cov_pd = pd.read_csv(args.read_txt_file, sep="	", names=['first', 'second', 'third'], header=None)
 	number_list = cov_pd['third'].values
 	
-	#number_list = np.asarray([1, 2, 3, 0, 4, 5, 6])
 	remove(cov_pd, number_list, args.write_txt_file)
