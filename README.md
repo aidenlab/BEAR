@@ -1,7 +1,11 @@
 # Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
-# 
+Paper: https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1
+
+Protocol: https://www.protocols.io/view/pathogen-oriented-low-cost-assembly-amp-re-sequenc-bearjad6
+
+# Contents
 * [Installation](#installation)
    * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
    * [Install Polar with installation script](#install-polar-with-installation-script)
