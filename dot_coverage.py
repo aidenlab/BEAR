@@ -8,7 +8,6 @@ matplotlib.rcParams.update({'font.size': 18})
 
 x_labels = "SARS-CoV-2 RefSeq Assembly"
 y_labels = "de novo SARS-CoV-2 Assembly"
-col = "#80D1D9" ###blue
 col = "#5DADE2"
 
 name_key = pd.DataFrame({ 
@@ -49,6 +48,11 @@ name_key = pd.DataFrame({
 	})
 
 def fill(f_txt):
+	'''Fills in 0s if missing coverage.
+
+	Inputs: f_txt- .txt fill to read for coverage
+	Outputs: cov_data- np array for coverage
+	'''
 	cov_pd = pd.read_csv(f_txt, sep="	", names=['first', 'second', 'third'], header=None)
 	if len(cov_pd.index) == 0:
 		return None
@@ -133,12 +137,12 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
 		ax_diagnostic.text(.4, .70, "Test Result: Positive", fontweight='bold')
-		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black')#, fontweight='bold')
-		ax_diagnostic.text(.4, .11, "in the sample", color='black')#, fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black')
+		ax_diagnostic.text(.4, .11, "in the sample", color='black')
 	else:
 		ax_diagnostic.text(.4, .70, "Test Result: Negative", fontweight='bold')
-		ax_diagnostic.text(.4, .4, "SARS-COV2 was not detected", color='black')#, fontweight='bold')
-		ax_diagnostic.text(.4, .11, "in the the sample", color='black')#, fontweight='bold')
+		ax_diagnostic.text(.4, .4, "SARS-COV2 was not detected", color='black')
+		ax_diagnostic.text(.4, .11, "in the the sample", color='black')
 
 	#Plot alignment bar chart
 	def new_labels(new_name, perc):
@@ -168,10 +172,8 @@ def plot_coverage(ax_coverage, cov_data, log_scale):
 	'''Create dot plot and coverage track.
 
 	Inputs: ax_coverage- coverage track axis
-			filled- np array data for coverage track
-			x_length- int length of dot plot x axis
-			bin_pos- list of locations for histogram bars on x axis
-			bin_counts- list of counts per bin
+			cov_data- np array of coverage data
+			log_scale- boolean if coverage should be log
 	Outputs: ax_coverage- coverage track axis
 	'''
 	#Coverage track axis style
@@ -190,16 +192,26 @@ def plot_coverage(ax_coverage, cov_data, log_scale):
 	#Coverage track tick marks and limits
 	ax_coverage.set_xlim(0, np.max(cov_data[:,0]))
 	(coverage_min, coverage_max) = ax_coverage.get_ylim()
+	tick_max = int(math.ceil(coverage_max/ 100.0)) * 100
 	if log_scale:
 		ax_coverage.set_yscale('log')
-		t_coverage = [1, int(math.ceil(coverage_max/ 100.0)) * 100]
+		t_coverage = [1]
+		intermediate_ticks = np.linspace(1, tick_max, num=5)
+		t_coverage.extend(intermediate_ticks)
+		t_coverage.append(tick_max)
+
+		ax_coverage.set_yticks(t_coverage, minor=True)
+		ax_coverage.set_yticklabels([], minor=True)
+		ax_coverage.tick_params(axis='y', which='minor', length=4)
+
 	else:
-		t_coverage = [0, int(math.ceil(coverage_max/ 100.0)) * 100]
+		t_coverage = [0, tick_max]
 		ax_coverage.spines['bottom'].set_position('zero')
-	ax_coverage.set_yticks(t_coverage)
-	ax_coverage.set_yticklabels(t_coverage, fontdict={'fontweight':'bold'})
-	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)#, length=0)
-	ax_coverage.spines['left'].set_bounds(t_coverage[0], t_coverage[1])
+
+	ax_coverage.set_yticks([t_coverage[0], t_coverage[-1]])
+	ax_coverage.set_yticklabels([t_coverage[0], t_coverage[-1]], fontdict={'fontweight':'bold'})
+	ax_coverage.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+	ax_coverage.spines['left'].set_bounds(t_coverage[0], tick_max)
 
 	return ax_coverage
 
@@ -209,8 +221,8 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 
 	Inputs: ax_dot- dot plot axis
 			dot_data- np array data for dot plot
-			x_length- int length of dot plot x axis
 			y_length- int length of dot plot y axis
+			cropy_y- boolean if vertical zoom
 	Outputs: ax_dot- dot plot axis
 	'''
 	#Dot plot axis style
@@ -223,7 +235,7 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 	
 	#Make dot plot
 	#if y_length < 100000:
-	#dot_data = dot_data.sort_values('7')
+		#dot_data = dot_data.sort_values('7')
 	dot_data['cum_offset'] = dot_data['1'].cumsum()
 	dot_data['upto_offset'] = dot_data['cum_offset'].values - dot_data['1'].values
 
@@ -257,7 +269,6 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 	ax_dot.set_yticks(t_yy_loc)
 	ax_dot.set_xticklabels(t_xx_loc, fontdict={'fontweight':'bold'})
 	ax_dot.set_yticklabels(t_yy_loc, fontdict={'fontweight':'bold'})
-	#ax_dot.tick_params(length=0)
 
 	return ax_dot
 
@@ -265,13 +276,13 @@ def plot_dot_plot(ax_dot, dot_data, y_length, crop_y):
 def plot(f_txt, dot_data, f_csv, y_length, write_file, crop_y, log_scale):
 	'''Plots coverage track, dot plot, alignment bar graph, diagnostic symbol. Writes .pdf
 
-	Inputs: filled- np array data for coverage track
+	Inputs: f_txt- string of .txt file for coverage data
 			dot_data- np array data for dot plot
 			f_csv- string of .csv file for alignment plot
-			bin_pos- list of locations for histogram bars on x axis
-			bin_counts- list of counts per bin
 			y_length- int length of dot plot y axis
 			write_file- string name of file to write plots to
+			crop_y- cropy_y- boolean if vertical zoom on dot plot
+			log_scale- boolean if coverage should be log
 	'''
 	fig, axs = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(20.75, 12), 
 		gridspec_kw={'height_ratios': [1, 11], 'width_ratios':[11, 9.75]})
