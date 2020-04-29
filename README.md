@@ -1,7 +1,11 @@
 # Pipeline for Polar: viral diagnostic for SARS-CoV-2
 ![Protocol image](images/polar_protocol.png)
 
-# 
+Paper: https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1
+
+Protocol: https://www.protocols.io/view/pathogen-oriented-low-cost-assembly-amp-re-sequenc-bearjad6
+
+# Contents
 * [Installation](#installation)
    * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
    * [Install Polar with installation script](#install-polar-with-installation-script)
@@ -147,8 +151,8 @@ full path to the executable.
 # Detailed Guide
 
 Polar is the viral diagnostic pipeline, currently designed
-for SARS-Cov-2. For more information on the protocol, see
-our paper here:
+for SARS-Cov-2. For more information, see
+the paper: https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1
 
 The pipeline takes as input paired-end sequencing reads
 and creates as output a PDF with the result of the test for the virus
