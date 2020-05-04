@@ -134,7 +134,7 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	
 	#Plot diagnostic symbol
 	ax_diagnostic.plot([.27, .33], [.5, .5], linewidth=20, color=col)
-	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 75:
+	if align_data[align_data['new']=='SARS-CoV-2']['percentage'].values[0] >= 5:
 		ax_diagnostic.plot([.3, .3], [.1, .9], linewidth=20, color=col)
 		ax_diagnostic.text(.4, .70, "Test Result: Positive", fontweight='bold')
 		ax_diagnostic.text(.4, .4, "SARS-CoV-2 was detected", color='black')
