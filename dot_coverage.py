@@ -130,6 +130,8 @@ def plot_alignment(ax_diagnostic, ax_align, f_csv):
 	align_data['id'] = align_data['label'].str.lower()
 	align_data = align_data.merge(name_key, how="left")
 	align_data = align_data.sort_values('percentage')
+	align_data.loc[align_data['new'].isnull(), 'new'] = align_data[align_data['new'].isnull()]['id']
+	
 	align_data.loc[align_data['id'].str.contains('wuhan'), 'new'] = 'SARS-CoV-2'
 	
 	#Plot diagnostic symbol
@@ -303,7 +305,7 @@ def plot(f_txt, dot_data, f_csv, y_length, write_file, crop_y, log_scale):
 if __name__ == "__main__":
 	'''
 	Example usage:
-	python pared_dot_coverage.py ".txt file for coverage" ".paf file for dot plot" ".csv for alignment" 
+	python dot_coverage.py ".txt file for coverage" ".paf file for dot plot" ".csv for alignment" 
 		"y axis length" "destination for plots" "-c flag to cut out unaligned contigs" "-l flag for log scale coverage track"
 	python dot_coverage.py depth_per_base.txt contig_nCoV-2019.paf stats.csv 29903 covid_plots 
 	'''
