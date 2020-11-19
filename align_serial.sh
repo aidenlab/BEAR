@@ -48,12 +48,12 @@ printHelpAndExit() {
 
 while getopts "d:t:hjk" opt; do
     case $opt in
-  h) printHelpAndExit 0;;
+	h) printHelpAndExit 0;;
         d) TOP_DIR=$OPTARG ;;
-  j) produceIndex=1 ;;
-  t) threads=$OPTARG ;;
-  k) afteralignment=1 ;;
-  [?]) printHelpAndExit 1;;
+	j) produceIndex=1 ;;
+	t) threads=$OPTARG ;;
+	k) afteralignment=1 ;;
+	[?]) printHelpAndExit 1;;
     esac
 done
 
@@ -133,9 +133,6 @@ Align_Reference ()
         
             # Align reads
         bwa mem -k 32 -t $threads $REFERENCE $file1 $file2 > $ALIGNED_FILE"_full_dataset.sam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
-
-        head -480009 $ALIGNED_FILE"_full_dataset.sam" > $ALIGNED_FILE".sam" 
-
         # Samtools fixmate and sort, output as BAM
         samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
         samtools sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"  2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
@@ -148,6 +145,39 @@ Align_Reference ()
         rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
         rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*"_mapped"*bam  
     fi
+
+#echo "Removing Rcecombinants..."
+#	"$sdir/remRecombo" "$nt2is" "${pi}/${fn}.bam" $splitSeq "$sdir"
+#samtools index "${pi}/${fn}.bam"
+#rm -f "${pi}/${fn}-rsort.temp"
+
+#echo "Coverage..."
+#"$sdir/coverage" "${pi}/${fn}" "$coverage" "$covBed"
+
+#echo "CC QC..."
+#awk -v output="$runQC" -v cc_expected=$cc_expected -v is_input=$is_input '{if($2 == 1) {
+#printf "%s\t%s\t%i\t%i\t%i\t%i", $1, "1",$4,$5,$6,$3 >> output
+#                if($5+$4==0){printf "\t%s\n", "ND" >> output} else {printf "\t%f\n",($5/($5+$4)*$3)/cc_expected >> output}
+#} else if($2 == 2) {
+#printf "%s\t%s\t%i\t%i\t%i\t%i", $1, "2",$7,$8,$9,$3 >> output
+#                if($7+$8==0){printf "\t%s\n", "ND" >> output} else {printf "\t%f\n",($8/($8+$7)*$3)/cc_expected >> output}
+#  #old viral load calc if($5==0){printf "\t%s\n", "ND" >> output} else {printf "\t%i\n" , $4/$5*is_input >> output}
+#}}' "${pi}/${fn}.bam_CC-read-counts.txt"
+#
+#echo "Calculating viral load..."
+#awk -v is_input=$is_input -v vl="$viralLoad" 'FNR==1 {next}
+#{
+#if ($3+$4==0) {
+#                vlr="ND"
+#        } else {
+#                vlr=( $2 + ($4 / 2) )/($3 + ($4 / 2) ) * is_input
+#        }
+#        printf "%s\t%i\t%i\t%i\t%i\t%.1f\n", $1, $2 , $3 , $4 , is_input , vlr >> vl
+#}' "$coverage"
+#
+#
+
+
     
     if samtools markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/dedup.out
     then
