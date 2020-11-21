@@ -22,11 +22,10 @@ VIRUS="SARS-CoV-2"
 ### VARIABLES: Automatically set
 TOP_DIR=$(pwd)
 PIPELINE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-REFERENCE="${PIPELINE_DIR}/reference_files/SARS-CoV_ISv0.4.1_seperate.fasta.gz"
+VIRAL_REFERENCE="${PIPELINE_DIR}/reference_files/SARS-CoV_ISv0.4.1_seperate.fasta.gz"
 NT_TO_IS="${PIPELINE_DIR}/reference_files/"
 REMRECOMBO="${PIPELINE_DIR}/accuGenomics/remRecombo"
-COVERAGE="${PIPELINE_DIR}/accuGenomics/coverage"
-HUMAN_REF="${PIPELINE_DIR}/reference_files/chrM.fa.gz"
+HUMAN_REFERENCE="${PIPELINE_DIR}/reference_files/chrM.fa.gz"
 
 # Usage and commands
 usageHelp="Usage: ${0##*/} [-d TOP_DIR] [-t THREADS] -jkrh"
@@ -106,60 +105,63 @@ done
 
 export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 
-Align_Reference ()
-{
-    ######################################################################
-    ########## Align 
-    ######################################################################
-    REFERENCE_NAME=$(echo $1 | sed 's:.*/::' | rev | cut -c7- | rev )
-
-    echo -e "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR\n to $VIRUS reference assembly and Accukit control sequence"
-
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}! Exiting"; exit 1; fi
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/aligned"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/aligned! Exiting"; exit 1; fi
-    if ! mkdir "${WORK_DIR}/${REFERENCE_NAME}/debug"; then echo "***! Unable to create ${WORK_DIR}/${REFERENCE_NAME}/debug! Exiting"; exit 1; fi
-    
-    for ((i = 0; i < ${#read1files[@]}; ++i)); do
-        file1=${read1files[$i]}
-        file2=${read2files[$i]}
-        
-        FILE=$(basename ${file1%$read1str})
-        ALIGNED_FILE=${WORK_DIR}/${REFERENCE_NAME}/aligned/${FILE}"_mapped"
-        
-        # Align reads
-        bwa mem -k 32 -t $threads $1 $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/align.out
-        # Samtools fixmate and sort, output as BAM
-        samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE".bam"
-        samtools sort -@ $threads -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE".bam"  2> ${WORK_DIR}/${REFERENCE_NAME}/debug/sort.out
-    done
-
-        # Merge sorted BAMs
-    if samtools merge ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/merge.out
-    then
-        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*_sorted.bam 
-        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*.sam  
-        rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/*"_mapped"*bam  
-    fi
-
-}
-
+######################################################################
+########## Align viral reference
+######################################################################
 if [[ "$afteralignment" -ne 1 ]]
 then
     if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"; exit 1; fi
+
+    echo -e "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR\n to $VIRUS reference assembly and Accukit control sequence"
+
+    if ! mkdir "${WORK_DIR}/virus"; then echo "***! Unable to create ${WORK_DIR}/virus! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/virus/aligned"; then echo "***! Unable to create ${WORK_DIR}/virus/aligned! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/virus/debug"; then echo "***! Unable to create ${WORK_DIR}/virus/debug! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/human"; then echo "***! Unable to create ${WORK_DIR}/human! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/human/aligned"; then echo "***! Unable to create ${WORK_DIR}/human/aligned! Exiting"; exit 1; fi
+    if ! mkdir "${WORK_DIR}/human/debug"; then echo "***! Unable to create ${WORK_DIR}/human/debug! Exiting"; exit 1; fi
     
-    export -f Align_Reference
-    for REF in $REFERENCE $HUMAN_REF
-    do
-        Align_Reference $REF &
+    for ((i = 0; i < ${#read1files[@]}; ++i)); do
+	file1=${read1files[$i]}
+	file2=${read2files[$i]}
+	
+	FILE=$(basename ${file1%$read1str})
+	ALIGNED_FILE1=${WORK_DIR}/virus/aligned/${FILE}"_mapped"
+	ALIGNED_FILE2=${WORK_DIR}/human/aligned/${FILE}"_mapped"
+	
+        # Align reads to virus
+	bwa mem -k 32 -t $threads $VIRAL_REFERENCE $file1 $file2 > $ALIGNED_FILE1".sam" 2> ${WORK_DIR}/virus/debug/align.out
+        # Samtools fixmate and sort, output as BAM
+	samtools fixmate -m $ALIGNED_FILE1".sam" $ALIGNED_FILE1".bam"
+	samtools sort -@ $threads -o $ALIGNED_FILE1"_matefixd_sorted.bam" $ALIGNED_FILE1".bam"  2> ${WORK_DIR}/virus/debug/sort.out
+
+        # Align reads to human
+	bwa mem -k 32 -t $threads $HUMAN_REFERENCE $file1 $file2 > $ALIGNED_FILE2".sam" 2> ${WORK_DIR}/human/debug/align.out
+        # Samtools fixmate and sort, output as BAM
+	samtools fixmate -m $ALIGNED_FILE2".sam" $ALIGNED_FILE2".bam"
+	samtools sort -@ $threads -o $ALIGNED_FILE2"_matefixd_sorted.bam" $ALIGNED_FILE2".bam"  2> ${WORK_DIR}/human/debug/sort.out
     done
-    wait
+
+    # Merge sorted BAMs
+    if samtools merge ${WORK_DIR}/virus/aligned/sorted_merged.bam ${WORK_DIR}/virus/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/virus/debug/merge.out
+    then
+	rm ${WORK_DIR}/virus/aligned/*_sorted.bam 
+	rm ${WORK_DIR}/virus/aligned/*.sam  
+	rm ${WORK_DIR}/virus/aligned/*"_mapped"*bam  
+    fi
+    if samtools merge ${WORK_DIR}/human/aligned/sorted_merged.bam ${WORK_DIR}/human/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/human/debug/merge.out
+    then
+	rm ${WORK_DIR}/human/aligned/*_sorted.bam 
+	rm ${WORK_DIR}/human/aligned/*.sam  
+	rm ${WORK_DIR}/human/aligned/*"_mapped"*bam  
+    fi
+
 fi
 echo "ʕ·ᴥ·ʔ : Done with alignment" 
 
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
 
-REFERENCE_NAME=$(echo $1 | sed 's:.*/::' | rev | cut -c7- | rev )
-"${REMRECOMBO}" "${NT_TO_IS}" ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam 0 
+"${REMRECOMBO}" "${NT_TO_IS}" ${WORK_DIR}/virus/aligned/sorted_merged.bam 0 
 
 #samtools index "${pi}/${fn}.bam"
 #rm -f "${pi}/${fn}-rsort.temp"
@@ -167,11 +169,14 @@ REFERENCE_NAME=$(echo $1 | sed 's:.*/::' | rev | cut -c7- | rev )
 echo "ʕ·ᴥ·ʔ : Calculating Viral Load..."
 
 #average reads per amplicon = total bases / expected fragment length 
-# print coverage, median value
 #echo -e "SAMPLE\tNT_READS\tIS_READS\tREC_READS\tNT_AVG\tIS_AVG\tREC_AVG" > "$coverage"
-samtools bedcov -Q 4 "$NT_TO_IS" "${stem}-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' > ${WORK_DIR}/aligned/ampliconCoverage.txt 
-samtools bedcov -Q 4 "$NT_TO_IS" "${stem}-IS.bam" | awk '$1 ~ /-SNAQ$/) { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
-samtools bedcov -Q 4 "$NT_TO_IS" "${stem}-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' > ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/) { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt
+
+###
+### Brian: we need to set controlThreshold and decide on how to set humanThreshold
+###
 
 awk -v threshold=$viralThreshold -v controlThreshold=$controlThreshold -v humanThreshold=$humanThreshold '{
  recomb = $3/2; 
@@ -199,39 +204,39 @@ awk -v threshold=$viralThreshold -v controlThreshold=$controlThreshold -v humanT
 # Gather alignment statistics
 echo "ʕ·ᴥ·ʔ : Compiling results" 
     
-if samtools markdup ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/dedup.out
+if samtools markdup ${WORK_DIR}/virus/aligned/sorted_merged.bam ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/virus/debug/dedup.out
 then
-    rm ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged.bam
+    rm ${WORK_DIR}/virus/aligned/sorted_merged.bam
 fi
 
-samtools depth -a -Q 1 ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam | awk '$1=="MN908947.3"' > ${WORK_DIR}/${REFERENCE_NAME}/aligned/depth_per_base.txt 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/depth.out
+samtools depth -a -Q 1 ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam | awk '$1=="MN908947.3"' > ${WORK_DIR}/virus/aligned/depth_per_base.txt 2> ${WORK_DIR}/virus/debug/depth.out
 
-#    samtools coverage -q 1 ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/coverage_1.tsv 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/coverage_1.out
-#    samtools coverage -q 0 ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/${REFERENCE_NAME}/aligned/coverage_0.tsv 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/coverage_0.out
+#    samtools coverage -q 1 ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/virus/aligned/coverage_1.tsv 2> ${WORK_DIR}/virus/debug/coverage_1.out
+#    samtools coverage -q 0 ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam > ${WORK_DIR}/virus/aligned/coverage_0.tsv 2> ${WORK_DIR}/virus/debug/coverage_0.out
 
 # In case you want to visualize the bams, index them. 
 if [ -n "$produceIndex" ]
 then
-    samtools index ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/${REFERENCE_NAME}/debug/index.out
+    samtools index ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam 2> ${WORK_DIR}/virus/debug/index.out
 fi
 
 # Statistics 
-echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/${REFERENCE_NAME}/aligned/alignment_stats.txt
-samtools flagstat ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam  >> ${WORK_DIR}/${REFERENCE_NAME}/aligned/alignment_stats.txt
+echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/virus/aligned/alignment_stats.txt
+samtools flagstat ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam  >> ${WORK_DIR}/virus/aligned/alignment_stats.txt
 
-echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/${REFERENCE_NAME}/aligned/alignment_stats.txt
-samtools stats ${WORK_DIR}/${REFERENCE_NAME}/aligned/sorted_merged_dups_marked.bam >> ${WORK_DIR}/${REFERENCE_NAME}/aligned/alignment_stats.txt
+echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/virus/aligned/alignment_stats.txt
+samtools stats ${WORK_DIR}/virus/aligned/sorted_merged_dups_marked.bam >> ${WORK_DIR}/virus/aligned/alignment_stats.txt
 
 
 REFERENCE_NAME='Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1'
 
-echo "label,breadth_of_coverage" > ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.csv
+echo "label,breadth_of_coverage" > ${WORK_DIR}/virus/aligned/stats.csv
 for f in ${WORK_DIR}/*/aligned/depth_per_base.txt
 do
-    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{count=0; onisland=0}$3>3{if (!onisland){onisland=1; island_start=$2}}$3<=3{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} if (NR==0){NR=1} printf("%s,%0.02f\n", fname, count*100/NR) }' $f >> ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.csv
+    awk -v fname=$(basename ${f%%/aligned*}) 'BEGIN{count=0; onisland=0}$3>3{if (!onisland){onisland=1; island_start=$2}}$3<=3{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} onisland=0}END{if (onisland){island_end=$2; if (island_end-island_start>=50){count=count+island_end-island_start}} if (NR==0){NR=1} printf("%s,%0.02f\n", fname, count*100/NR) }' $f >> ${WORK_DIR}/virus/aligned/stats.csv
 done
 
-python ${PIPELINE_DIR}/compile_results.py ${TOP_DIR} ${WORK_DIR}/${REFERENCE_NAME}/aligned/coverage_1.tsv ${WORK_DIR}/${REFERENCE_NAME}/aligned/coverage_0.tsv ${WORK_DIR}/${REFERENCE_NAME}/aligned/stats.csv ${WORK_DIR}/result.csv 
+python ${PIPELINE_DIR}/compile_results.py ${TOP_DIR} ${WORK_DIR}/virus/aligned/coverage_1.tsv ${WORK_DIR}/virus/aligned/coverage_0.tsv ${WORK_DIR}/virus/aligned/stats.csv ${WORK_DIR}/result.csv 
 
 
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"
