@@ -161,7 +161,7 @@ print length(NTc1) "\t" length(ISc1) "\t" length(CCc1) "\t" length(NTc2) "\t" le
 	}
 }' "$1" - "$tempFile"
 
-echo "Creating BAM..."
+echo "  Creating BAM..."
 samtools view -b1h "${pi}/${fn}-good.sam" -o "${pi}/${fn}-good.bam"
 samtools index "${pi}/${fn}-good.bam"
 if [ -f "${pi}/${fn}-IS.sam" ];then
@@ -175,75 +175,9 @@ samtools index "${pi}/${fn}-bad.bam"
 samtools sort "${pi}/${fn}-cc.sam" -l 1 -@ 32 -m 1G -o "${pi}/${fn}-cc.bam"
 samtools index "${pi}/${fn}-cc.bam"
 
-echo "Creating fastq..."
-test1=$(samtools view -c -f 1 ${pi}/${fn}-good.sam)
-if [[ $test1 -ne 0 ]];then
-	if [ -f "${pi}/${fn}-good.sam" ];then	
-		samtools sort -n "${pi}/${fn}-good.sam" -o "${pi}/${fn}-rsort.temp" -O bam -@ 32 -m 1G >/dev/null 2>&1
-		samtools fastq --verbosity 3 -1 "${pi}/${fn}-NT-R1.fastq.gz" -2 "${pi}/${fn}-NT-R2.fastq.gz" "${pi}/${fn}-rsort.temp" &>/dev/null
-	fi
-        if [ -f "${pi}/${fn}-IS.sam" ];then
-		samtools sort -n "${pi}/${fn}-IS.sam" -o "${pi}/${fn}-rsort.temp" -O bam -@ 32 -m 1G >/dev/null 2>&1
-		samtools fastq --verbosity 3 -1 "${pi}/${fn}-IS-R1.fastq.gz" -2 "${pi}/${fn}-IS-R2.fastq.gz" "${pi}/${fn}-rsort.temp" &>/dev/null
-	fi
-        if [ -f "${pi}/${fn}-bad.sam" ];then
-		samtools sort -n "${pi}/${fn}-bad.sam" -o "${pi}/${fn}-rsort.temp" -O bam -@ 32 -m 1G >/dev/null 2>&1
-		samtools fastq --verbosity 3 -1 "${pi}/${fn}-bad-R1.fastq.gz" -2 "${pi}/${fn}-bad-R2.fastq.gz" "${pi}/${fn}-rsort.temp" &>/dev/null
-	fi
-	if [ -f "${pi}/${fn}-CC.sam" ];then
-		samtools sort -n "${pi}/${fn}-CC.sam" -o "${pi}/${fn}-rsort.temp" -O bam -@ 32 -m 1G >/dev/null 2>&1
-		samtools fastq --verbosity 3 -1 "${pi}/${fn}-CC-R1.fastq.gz" -2 "${pi}/${fn}-CC-R2.fastq.gz" "${pi}/${fn}-rsort.temp" &>/dev/null
-	fi
-else
-        if [ -f "${pi}/${fn}-good.sam" ];then
-		samtools fastq -0 "${pi}/${fn}-NT-R1.fastq.gz" "${pi}/${fn}-good.sam"
-        fi
-        if [ -f "${pi}/${fn}-IS.sam" ];then
-		samtools fastq -0 "${pi}/${fn}-IS-R1.fastq.gz" "${pi}/${fn}-IS.sam"
-        fi
-        if [ -f "${pi}/${fn}-bad.sam" ];then
-		samtools fastq -0 "${pi}/${fn}-bad-R1.fastq.gz" "${pi}/${fn}-bad.sam"
-	fi
-	if [ -f "${pi}/${fn}-CC.sam" ];then
-		samtools fastq -0 "${pi}/${fn}-CC-R1.fastq.gz" "${pi}/${fn}-CC.sam"
-	fi
-fi
-
-echo "Removing scratch files..."
-#rm -f "${pi}/${fn}-IS.sam"
-#rm -f "${pi}/${fn}-good.sam"
-#rm -f "${pi}/${fn}-bad.sam"
-#rm -f "${pi}/${fn}-cc.sam"
+echo "  Removing scratch files..."
+rm -f "${pi}/${fn}-IS.sam"
+rm -f "${pi}/${fn}-good.sam"
+rm -f "${pi}/${fn}-bad.sam"
+rm -f "${pi}/${fn}-cc.sam"
 rm -f "${pi}/tempFile.sam"
-
-echo "Tablulating CC..."
-#if [[$(stat -c%s $complexityFile) > 0 ]];then
-
-## Read through <prefix>-CC.txt
-##   Create count of each unique <ID><type><seq>
-##   Last row of <prefix>-CC.txt has NT1 IS1 NT2 IS2 totCC_reads
-awk -v outFile1="${pi}/${fn}-CC-counts.txt" -v outFile2="${2}_CC-read-counts.txt" 'FNR==NR{
-	last++;next
-}
-FNR != last {
-	uSEQ[$1 "\t" $2 "\t" $3]++
-}
-FNR == last {
-	coverage=$1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6	
-}
-END {
-	print "SampleID\tTarget\tSequence\tCount\tNT_P1\tIS_P1\tCC_P1\tNT_P2\tIS_P2\tCC_P2" > outFile1
-	print "SampleID\tTarget\tUniqueCount\tNT_P1\tIS_P1\tCC_P1\tNT_P2\tIS_P2\tCC_P2" > outFile2
-	for (key in uSEQ) {
-		print key "\t" uSEQ[key] "\t" coverage > outFile1
-		split(key,arr,"\t")
-		cUniq[arr[1]"\t"arr[2]]++
-	}
-	
-	for (key in cUniq) {
-		print key "\t" cUniq[key] "\t" coverage > outFile2
-	}
-}' "$complexityFile" "$complexityFile"
-
-#rm -f "$complexityFile"
-
