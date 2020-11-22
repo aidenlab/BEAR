@@ -196,8 +196,8 @@ awk -v threshold=$viralThreshold -v controlThreshold=$controlThreshold -v humanT
    }
    else {
      print "Undetermined, no control detected";
-   }
-}'  ${WORK_DIR}/aligned/ampliconCoverage.txt
+   }    }
+}'  ${WORK_DIR}/virus/aligned/ampliconCoverage.txt
 
 
 ## NEVA HERE PAUSED
