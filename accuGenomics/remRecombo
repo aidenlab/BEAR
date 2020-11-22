@@ -36,15 +36,13 @@ ccFile="${pi}/${fn}-cc.sam"
 hashTallies="${pi}/${fn}-tallies.txt"
 tempFile="${pi}/tempFile.sam"
 
-echo "Preparing ${pi}/${fn}.${fe}..."
+echo "   Preparing ${pi}/${fn}.${fe}..."
 samtools view -H "${pi}/${fn}.${fe}" > $goodFile
 cp $goodFile $badFile
 cp $goodFile $ccFile
 cp $goodFile $isFile
 
-echo "Removing recombinants & calculating CC..."
-echo "Lookup table $1"
-echo "reading ${pi}/${fn}.${fe}"
+echo "   Removing recombinants & calculating CC..."
 samtools view "${pi}/${fn}.${fe}" | awk -v badFile="$badFile" -v ccFile="$ccFile" -v tempFile="$tempFile" -v goodFile="$goodFile" -v hashTallies="$hashTallies" -v complexityFile="$complexityFile" -v sampleName="$fn" -v splitSeq="$3" -v isFile="$isFile" ' 
 BEGIN {
 	xs="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
