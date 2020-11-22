@@ -23,7 +23,7 @@ VIRUS="SARS-CoV-2"
 TOP_DIR=$(pwd)
 PIPELINE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VIRAL_REFERENCE="${PIPELINE_DIR}/reference_files/SARS-CoV_ISv0.4.1_seperate.fasta.gz"
-NT_TO_IS="${PIPELINE_DIR}/reference_files/"
+NT_TO_IS="${PIPELINE_DIR}/reference_files/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
 REMRECOMBO="${PIPELINE_DIR}/accuGenomics/remRecombo"
 HUMAN_REFERENCE="${PIPELINE_DIR}/reference_files/chrM.fa.gz"
 
