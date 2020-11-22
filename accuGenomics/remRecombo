@@ -43,6 +43,8 @@ cp $goodFile $ccFile
 cp $goodFile $isFile
 
 echo "Removing recombinants & calculating CC..."
+echo "Lookup table $1"
+echo "reading ${pi}/${fn}.${fe}"
 samtools view "${pi}/${fn}.${fe}" | awk -v badFile="$badFile" -v ccFile="$ccFile" -v tempFile="$tempFile" -v goodFile="$goodFile" -v hashTallies="$hashTallies" -v complexityFile="$complexityFile" -v sampleName="$fn" -v splitSeq="$3" -v isFile="$isFile" ' 
 BEGIN {
 	xs="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
