@@ -24,6 +24,7 @@ TOP_DIR=$(pwd)
 PIPELINE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VIRAL_REFERENCE="${PIPELINE_DIR}/reference_files/SARS-CoV_ISv0.4.1_seperate.fasta.gz"
 NT_TO_IS="${PIPELINE_DIR}/reference_files/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
+AMPLICONS="${PIPELINE_DIR}/reference_files/VarDict-amplicon.v2.bed"
 REMRECOMBO="${PIPELINE_DIR}/accuGenomics/remRecombo"
 HUMAN_REFERENCE="${PIPELINE_DIR}/reference_files/chrM.fa.gz"
 
@@ -170,9 +171,9 @@ echo "ʕ·ᴥ·ʔ : Calculating Viral Load..."
 
 #average reads per amplicon = total bases / expected fragment length 
 #echo -e "SAMPLE\tNT_READS\tIS_READS\tREC_READS\tNT_AVG\tIS_AVG\tREC_AVG" > "$coverage"
-samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' > ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
-samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/) { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
-samtools bedcov -Q 4 "$NT_TO_IS" "${WORK_DIR}/virus/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/virus/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' > ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/virus/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/) { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/virus/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/virus/aligned/ampliconCoverage.txt
 
 ###
 ### Brian: we need to set controlThreshold and decide on how to set humanThreshold
