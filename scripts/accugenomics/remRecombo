@@ -36,13 +36,13 @@ ccFile="${pi}/${fn}-cc.sam"
 hashTallies="${pi}/${fn}-tallies.txt"
 tempFile="${pi}/tempFile.sam"
 
-echo "   Preparing ${pi}/${fn}.${fe}..."
+echo "        Preparing ${pi}/${fn}.${fe}"
 samtools view -H "${pi}/${fn}.${fe}" > $goodFile
 cp $goodFile $badFile
 cp $goodFile $ccFile
 cp $goodFile $isFile
 
-echo "   Removing recombinants & calculating CC..."
+echo "        Removing recombinants & calculating CC"
 samtools view "${pi}/${fn}.${fe}" | awk -v badFile="$badFile" -v ccFile="$ccFile" -v tempFile="$tempFile" -v goodFile="$goodFile" -v hashTallies="$hashTallies" -v complexityFile="$complexityFile" -v sampleName="$fn" -v splitSeq="$3" -v isFile="$isFile" ' 
 BEGIN {
 	xs="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -161,7 +161,7 @@ print length(NTc1) "\t" length(ISc1) "\t" length(CCc1) "\t" length(NTc2) "\t" le
 	}
 }' "$1" - "$tempFile"
 
-echo "  Creating BAM..."
+echo "        Creating BAM"
 samtools view -b1h "${pi}/${fn}-good.sam" -o "${pi}/${fn}-good.bam"
 samtools index "${pi}/${fn}-good.bam"
 if [ -f "${pi}/${fn}-IS.sam" ];then
@@ -175,9 +175,10 @@ samtools index "${pi}/${fn}-bad.bam"
 samtools sort "${pi}/${fn}-cc.sam" -l 1 -@ 32 -m 1G -o "${pi}/${fn}-cc.bam"
 samtools index "${pi}/${fn}-cc.bam"
 
-echo "  Removing scratch files..."
+echo "        Removing scratch files"
 rm -f "${pi}/${fn}-IS.sam"
 rm -f "${pi}/${fn}-good.sam"
 rm -f "${pi}/${fn}-bad.sam"
 rm -f "${pi}/${fn}-cc.sam"
 rm -f "${pi}/tempFile.sam"
+rm -f "${pi}/*bai"
