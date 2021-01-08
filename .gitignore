@@ -1,0 +1,17 @@
+.DS_Store
+*.paf
+*.pdf
+*.png
+*.svg
+*.txt
+*.fa
+*.tsv
+*.html
+*.pdf
+*.pdf
+stats1.pdf
+make_list.py
+stats.csv
+*.csv
+no_alignment.py
+*.pyc
