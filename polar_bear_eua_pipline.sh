@@ -8,7 +8,6 @@ THREADS=16
 TOP_DIR=$(pwd)
 LIB_NAME=$(pwd | awk -F "/" '{print $NF}')
 PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 
 # Scripts
 REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo"
@@ -109,6 +108,8 @@ do
     read2files+=($name2$ext)
 done
 
+# Export working directory just before use
+export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 
 ####### First block of work: Alignment of reads to reference
 echo -e "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
