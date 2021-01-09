@@ -406,7 +406,8 @@ declare -A dna_flex_dna_ud_dict_i7=(
   ["CGGCCTTG"]="D:E12"
   ["TATGAACT"]="D:F12"
   ["CCTAAGGA"]="D:G12"
-  ["GTATTCCA"]="D:H12" )
+  ["GTATTCCA"]="D:H12"
+  )
 
 A_FILE=$(ls $FASTQ_DIR | head -1)
 A_READ_NAME=$(less $FASTQ_DIR/$A_FILE | head -1)

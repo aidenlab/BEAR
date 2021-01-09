@@ -82,6 +82,8 @@ else
     exit
 fi
 
+export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
+
 # Check to make sure output folders do not already exist 
 if ! mkdir "${WORK_DIR}"; then echo "***! Unable to create ${WORK_DIR}! Exiting"; exit 1; fi
 if ! mkdir "${WORK_DIR}/aligned"; then echo "***! Unable to create ${WORK_DIR}/aligned! Exiting"; exit 1; fi
@@ -108,8 +110,6 @@ do
     read2files+=($name2$ext)
 done
 
-# Export working directory just before use
-export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 
 ####### First block of work: Alignment of reads to reference
 echo -e "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
@@ -166,6 +166,8 @@ then
     echo "ʕ·ᴥ·ʔ : Assembling Viral Genome" 
     bedtools bamtofastq -i "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" -fq "${WORK_DIR}/assembly/viral_reads.fastq"
     megahit --force -r "${WORK_DIR}/assembly/viral_reads.fastq" -o "${WORK_DIR}/assembly" 2> "${WORK_DIR}/assembly/debug/asm.out"
+    awk '/^>/{if(N)exit;++N;} {print;}' $REFERENCE > "${WORK_DIR}/assembly/sars_cov_2_only.fasta"
+    minimap2 -x asm5 "${WORK_DIR}/assembly/sars_cov_2_only.fasta" "${WORK_DIR}/assembly/final.contigs.fa" > "${WORK_DIR}/assembly/contig.paf" 2> "${WORK_DIR}/assembly/minimap.out"
 fi
 
 # Gather alignment qc statistics
@@ -185,5 +187,5 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 echo "ʕ·ᴥ·ʔ : Compiling results" 
 
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
-python $COMPILE_RESULT ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/aligned/qc_stats.txt ${WORK_DIR}/result.txt ${WORK_DIR}/assembly/log $LIB_NAME
+python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/result.txt ${WORK_DIR}/aligned/qc_stats.txt ${WORK_DIR}/assembly/contig.paf 
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"

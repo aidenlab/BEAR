@@ -15,3 +15,4 @@ stats.csv
 *.csv
 no_alignment.py
 *.pyc
+*.ipynb
