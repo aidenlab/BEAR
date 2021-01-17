@@ -1,7 +1,7 @@
 
 printHelpAndExit() {
     cat <<PRINTHELPANDEXIT
-Program: Get Index ID from FASTQ File
+Program: Get IDT® for Illumina® DNA/RNA UD Index ID from FASTQ File
 Version: 1.0
 Contact: Per Adastra <adastra.aspera.per@gmail.com>
 Usage:  
@@ -22,6 +22,8 @@ do
     esac
 done
 
+# Array of index sequence and the index ID (Plate Alpha: Index postion in plate)
+# Example: A:A12 is plate A, Index in well A12. 
 declare -A dna_flex_dna_ud_dict_i7=(
   ["CGCTCCAC"]="A:A1"
   ["TATCTTGT"]="A:B1"
@@ -409,9 +411,19 @@ declare -A dna_flex_dna_ud_dict_i7=(
   ["GTATTCCA"]="D:H12"
   )
 
+# Grab a FASTQ file path
 A_FILE=$(ls $FASTQ_DIR | head -1)
-A_READ_NAME=$(less $FASTQ_DIR/$A_FILE | head -1)
-I7_SEQUENCE="${A_READ_NAME: -8}"
+
+# Read in first 20 read index sequences string (i5-i7), and sort them and then choose the highest recuring string and assign that as "INDEX_STRING"
+# This sorting step accounts for cases in which demuxing produced reads in which a postion in the index string in "N"
+INDEX_STRING=$(less $FASTQ_DIR/$A_FILE | head -80| grep ^@ | awk '{print $2}' | sort | uniq -c | sort -r | awk '{print $2}')
+
+# Get the i7 which is sufficent to ID the Index.
+I7_SEQUENCE="${INDEX_STRING: -8}"
+
+# Use array to get index ID. 
 INDEX_ID="${dna_flex_dna_ud_dict_i7[$I7_SEQUENCE]}"
+
+# Return the Index ID 
 echo "Index ID: "$INDEX_ID
 
