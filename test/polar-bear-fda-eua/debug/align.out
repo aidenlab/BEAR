@@ -9,7 +9,7 @@
 [M::mem_pestat] low and high boundaries for proper pairs: (1, 150)
 [M::mem_pestat] skip orientation RF as there are not enough pairs
 [M::mem_pestat] skip orientation RR as there are not enough pairs
-[M::mem_process_seqs] Processed 100000 reads in 7.303 CPU sec, 0.481 real sec
+[M::mem_process_seqs] Processed 100000 reads in 6.502 CPU sec, 0.427 real sec
 [main] Version: 0.7.17-r1188
 [main] CMD: bwa mem -t 16 /Users/peradastra/Documents/GitHub/POLAR-BEAR/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_accukit_ISv0.4.1.fasta /Users/peradastra/Documents/GitHub/POLAR-BEAR/test/fastq/test_R1.fastq /Users/peradastra/Documents/GitHub/POLAR-BEAR/test/fastq/test_R2.fastq
-[main] Real time: 0.716 sec; CPU: 7.536 sec
+[main] Real time: 0.647 sec; CPU: 6.722 sec
