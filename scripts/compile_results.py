@@ -55,6 +55,8 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
 
     if index_id in polar_control_index_ids:
         sample_type_var = "Negative Control"
+    elif index_id == "UNK":
+        sample_type_var = "Unknown Sample"
     else:
         sample_type_var = "Clinical Sample"
 

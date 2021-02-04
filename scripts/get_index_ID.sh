@@ -418,11 +418,26 @@ A_FILE=$(ls $FASTQ_DIR | head -1)
 # This sorting step accounts for cases in which demuxing produced reads in which a postion in the index string in "N"
 INDEX_STRING=$(less $FASTQ_DIR/$A_FILE | head -80| grep ^@ | awk '{print $2}' | sort | uniq -c | sort -r | awk '{print $2}' | head -1)
 
-# Get the i7 which is sufficent to ID the Index.
-I7_SEQUENCE="${INDEX_STRING: -8}"
+if [[ $INDEX_STRING == *"N"* ]]; 
+then
 
-# Use array to get index ID. 
-INDEX_ID="${dna_flex_dna_ud_dict_i7[$I7_SEQUENCE]}"
+  # Get the i7 which is sufficent to ID the Index.
+  I7_SEQUENCE="${INDEX_STRING: -8}"
+
+  # Use array to get index ID. 
+  INDEX_ID="${dna_flex_dna_ud_dict_i7[$I7_SEQUENCE]}"
+
+else
+
+  INDEX_ID="UNK"
+
+fi
+
+  # Get the i7 which is sufficent to ID the Index.
+  I7_SEQUENCE="${INDEX_STRING: -8}"
+
+  # Use array to get index ID. 
+  INDEX_ID="${dna_flex_dna_ud_dict_i7[$I7_SEQUENCE]}"
 
 # Return the Index ID 
 echo "Index ID: "$INDEX_ID
