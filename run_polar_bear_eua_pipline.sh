@@ -81,14 +81,7 @@ export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 if ! mkdir "${WORK_DIR}" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/aligned! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
-
-# Make sure optional output folder does not exist 
-if [ -n "${ASSEMBLE}" ];
-then 
-    if ! mkdir "${WORK_DIR}/assembly" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly! Exiting"; exit 1; fi
-    if ! mkdir "${WORK_DIR}/assembly/debug" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly/debug! Exiting"; exit 1; fi
-        if ! mkdir "${WORK_DIR}/assembly/final" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly/debug! Exiting"; exit 1; fi
-fi 
+if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
 
 # Create an array comprised of a FASTQ files
 declare -a read1files=()
