@@ -1,3 +1,6 @@
+# Per Adastra Files
+*.paa 
+
 # Apple stuff
 .DS_Store
 
