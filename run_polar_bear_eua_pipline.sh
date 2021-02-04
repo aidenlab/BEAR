@@ -38,7 +38,7 @@ PRINTHELPANDEXIT
 exit
 }
 
-while getopts "d:t:ahv" opt;
+while getopts "d:t:h" opt;
 do
     case $opt in
         d) TOP_DIR=$OPTARG ;;

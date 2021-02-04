@@ -1,7 +1,5 @@
 import pandas as pd
 import argparse
-import os.path
-import numpy
 
 polar_control_index_ids = ['A:H6'
                            'A:H12'
@@ -14,25 +12,12 @@ polar_control_index_ids = ['A:H6'
 
 
 def compile_results_into_file(libname_var, all_align_stats_file, viral_align_stats_file,
-                              viral_depth_per_base, path_to_clinical_result, path_to_qc_result)
-
-        sorted_lengths = sorted(lengths, reverse=True)
-        csum = numpy.cumsum(sorted_lengths)
-        n2 = int(sum(lengths) / 2)
-        csumn2 = min(csum[csum >= n2])
-        ind = numpy.where(csum == csumn2)
-
-        n50_var = sorted_lengths[int(ind[0])]
-        min_length_var = sorted_lengths[0]
-        max_length_var = sorted_lengths[1]
-        sum_length_var = sum(sorted_lengths)
-        number_of_contigs_var = len(sorted_lengths)
-    else:
-        n50_var = 'NA'
-        min_length_var = 'NA'
-        max_length_var = 'NA'
-        sum_length_var = 'NA'
-        number_of_contigs_var = 'NA'
+                              viral_depth_per_base, path_to_clinical_result, path_to_qc_result):
+    n50_var = 'NA'
+    min_length_var = 'NA'
+    max_length_var = 'NA'
+    sum_length_var = 'NA'
+    number_of_contigs_var = 'NA'
 
     with open(viral_align_stats_file) as viral_stat_file:
         for line in viral_stat_file:
@@ -73,18 +58,19 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
     else:
         sample_type_var = "Clinical Sample"
 
-    qc_stats_to_write = str(libname_var) + '\n' + \
-                        str(total_reads_var) + '\n' + \
-                        str(mapped_reads_var) + '\n' + \
-                        str(breadth_of_coverage_var) + '\n' + \
-                        str(dup_reads_var) + '\n' + \
-                        str(insert_var) + '\n' + \
-                        str(insert_dev_var) + '\n' + \
-                        str(number_of_contigs_var) + '\n' + \
-                        str(sum_length_var) + '\n' + \
-                        str(min_length_var) + '\n' + \
-                        str(max_length_var) + '\n' + \
-                        str(n50_var)
+    qc_stats_to_write = '{0}\n{1}\n{2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}\n{9}\n{10}\n{11}'.format(
+        str(libname_var),
+        str(total_reads_var),
+        str(mapped_reads_var),
+        str(breadth_of_coverage_var),
+        str(dup_reads_var),
+        str(insert_var),
+        str(insert_dev_var),
+        str(number_of_contigs_var),
+        str(sum_length_var),
+        str(min_length_var),
+        str(max_length_var),
+        str(n50_var))
 
     clinical_result_to_write = str(libname_var) + "," + str(clinical_result_var) + "," + str(sample_type_var)
 
