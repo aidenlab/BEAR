@@ -1,0 +1,22 @@
+name: polar_eua_conda_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+# Deps of Polar
+  - python=3.7
+  - pip
+  - bwa
+  - minimap2
+  - gawk
+  - samtools
+  - megahit
+  - bedtools
+# Software
+  - curl
+  - git
+  - pip:
+    - argparse
+    - numpy
+    - pandas

@@ -31,16 +31,14 @@ Usage:
 Options:
 
    -d  Top level directory which must contain a subdirectory (fastq/) with fastq files
-   -t  Number of hreads for BWA alignment (Default: $THREADS)
-   -a  Assemble genome using MEGAHIT
-   -v  Determine variants as compared to SARS-CoV-2 isolate Wuhan-Hu-1 
+   -t  Number of threads for BWA alignment (Default: $THREADS)
    -h  Print this help and exit
 
 PRINTHELPANDEXIT
 exit
 }
 
-while getopts "d:t:ahv6" opt;
+while getopts "d:t:ahv" opt;
 do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
