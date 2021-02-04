@@ -164,5 +164,5 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 echo "ʕ·ᴥ·ʔ : Compiling results" 
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
-python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/final/result.txt ${WORK_DIR}/aligned/qc_stats.txt
+python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/final/result.csv ${WORK_DIR}/aligned/qc_stats.txt
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"
