@@ -14,14 +14,8 @@ polar_control_index_ids = ['A:H6'
 
 
 def compile_results_into_file(libname_var, all_align_stats_file, viral_align_stats_file,
-                              viral_depth_per_base, path_to_clinical_result, path_to_qc_result,
-                              paf_file):
-    if os.path.isfile(paf_file):
-        lengths = []
-        with open(paf_file, 'r') as data:
-            for line in data:
-                ls = line.split()
-                lengths.append(int(ls[1]))
+                              viral_depth_per_base, path_to_clinical_result, path_to_qc_result)
+
 
         sorted_lengths = sorted(lengths, reverse=True)
         csum = numpy.cumsum(sorted_lengths)
@@ -116,5 +110,4 @@ if __name__ == "__main__":
     arg = parser.parse_args()
 
     compile_results_into_file(arg.libname_var, arg.all_align_stats_file, arg.viral_align_stats_file,
-                              arg.viral_depth_per_base, arg.path_to_clinical_result, arg.path_to_qc_result,
-                              arg.paf_file)
+                              arg.viral_depth_per_base, arg.path_to_clinical_result, arg.path_to_qc_result)

@@ -43,8 +43,6 @@ do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
         t) THREADS=$OPTARG ;;
-        a) ASSEMBLE=1 ;;
-        v) VAR=1 ;;
         h) printHelpAndExit ;;
     esac
 done
@@ -55,17 +53,6 @@ command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it'
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
 command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
-
-# Check installation of optional software if needed
-if [ -n "${ASSEMBLE}" ];
-then 
-    command -v megahit >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : MEGAHIT required but it's not installed!"; exit 1; }
-fi 
-
-if [ -n "${VAR}" ];
-then 
-    command -v ivar >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : iVar required but it's not installed!"; exit 1; }
-fi 
 
 # Check for data (FASTQ) files
 # We assume the files exist in a "fastq" directory
@@ -100,6 +87,7 @@ if [ -n "${ASSEMBLE}" ];
 then 
     if ! mkdir "${WORK_DIR}/assembly" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly! Exiting"; exit 1; fi
     if ! mkdir "${WORK_DIR}/assembly/debug" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly/debug! Exiting"; exit 1; fi
+        if ! mkdir "${WORK_DIR}/assembly/final" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/assembly/debug! Exiting"; exit 1; fi
 fi 
 
 # Create an array comprised of a FASTQ files
@@ -166,28 +154,6 @@ samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | 
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-good.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" 2> ${WORK_DIR}/debug/good_dedup.out
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_IS.bam" 2> ${WORK_DIR}/debug/IS_dedup.out
 
-if [[ "${ASSEMBLE}" -eq 1 ]] || [[ "${VAR}" -eq 1 ]] 
-then
-    samtools rmdup "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" "${WORK_DIR}/aligned/sorted_merged_viral_deduped.bam" 2> ${WORK_DIR}/debug/viral_rmdup.out
-    awk '/^>/{if(N)exit;++N;} {print;}' $REFERENCE > "${WORK_DIR}/aligned/sars_cov_2_only.fasta"
-fi
-
-if [[ "${ASSEMBLE}" -eq 1 ]]
-then
-    echo "ʕ·ᴥ·ʔ : Assembling Viral Genome" 
-    bedtools bamtofastq -i "${WORK_DIR}/aligned/sorted_merged_viral_deduped.bam" -fq "${WORK_DIR}/assembly/viral_reads.fastq"
-    megahit --force -r "${WORK_DIR}/assembly/viral_reads.fastq" -o "${WORK_DIR}/assembly" 2> "${WORK_DIR}/assembly/debug/asm.out"
-    awk '/^>/{if(N)exit;++N;} {print;}' $REFERENCE > "${WORK_DIR}/assembly/sars_cov_2_only.fasta"
-    minimap2 -x asm5 "${WORK_DIR}/aligned/sars_cov_2_only.fasta" "${WORK_DIR}/assembly/final.contigs.fa" > "${WORK_DIR}/assembly/contig.paf" 2> "${WORK_DIR}/assembly/minimap.out"
-fi
-
-if [[ "${VAR}" -eq 1 ]]
-then
-    echo "ʕ·ᴥ·ʔ : Recording Variants" 
-    samtools index "${WORK_DIR}/aligned/sorted_merged_viral_deduped.bam"
-    samtools mpileup -r MN908947.3:0-29903 -d 600000 -B -Q 0 "${WORK_DIR}/aligned/sorted_merged_viral_deduped.bam" 2> ${WORK_DIR}/debug/mpileup.out | ivar variants -p "${WORK_DIR}/aligned/variants.tsv" -q 20 -t 0.03 -r "${WORK_DIR}/aligned/sars_cov_2_only.fasta" > ${WORK_DIR}/debug/variants.out 
-fi 
-
 # Gather alignment qc statistics
 # To avoid cross-reaction with SARS a few regions are excluded from analysis
 samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" | awk '$1=="MN908947.3"' > ${WORK_DIR}/aligned/viral_depth_per_base.txt 2> ${WORK_DIR}/debug/viral_depth.out
@@ -205,5 +171,5 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 echo "ʕ·ᴥ·ʔ : Compiling results" 
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
-python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/result.txt ${WORK_DIR}/aligned/qc_stats.txt ${WORK_DIR}/assembly/contig.paf 
+python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/final/result.txt ${WORK_DIR}/aligned/qc_stats.txt
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"
