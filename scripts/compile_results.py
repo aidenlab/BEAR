@@ -59,18 +59,18 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
         sample_type_var = "Clinical Sample"
 
     qc_stats_to_write = '{0}\n{1}\n{2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}\n{9}\n{10}\n{11}'.format(
-        str(libname_var),
-        str(total_reads_var),
-        str(mapped_reads_var),
-        str(breadth_of_coverage_var),
-        str(dup_reads_var),
-        str(insert_var),
-        str(insert_dev_var),
-        str(number_of_contigs_var),
-        str(sum_length_var),
-        str(min_length_var),
-        str(max_length_var),
-        str(n50_var))
+        "Library name ," + str(libname_var),
+        "Total reads ," + str(total_reads_var),
+        "Aligned reads ," + str(mapped_reads_var),
+        "BoC ," + str(breadth_of_coverage_var),
+        "Duplicates ," + str(dup_reads_var),
+        "Insert ," + str(insert_var),
+        "Insert deviation ," + str(insert_dev_var),
+        "Number of Contigs ," + str(number_of_contigs_var),
+        "Assembly size ," + str(sum_length_var),
+        "Smallest contig size ," + str(min_length_var),
+        "Largest contig size ," + str(max_length_var),
+        "Contig N50 ," + str(n50_var))
 
     clinical_result_to_write = str(libname_var) + "," + str(clinical_result_var) + "," + str(sample_type_var)
 
