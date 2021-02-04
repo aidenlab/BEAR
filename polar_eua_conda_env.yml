@@ -1,4 +1,4 @@
-name: polar_eua_conda_env
+name: POLAR-BEAR-EUA
 channels:
   - conda-forge
   - bioconda
@@ -11,12 +11,10 @@ dependencies:
   - minimap2
   - gawk
   - samtools
-  - megahit
   - bedtools
 # Software
   - curl
   - git
   - pip:
     - argparse
-    - numpy
     - pandas
