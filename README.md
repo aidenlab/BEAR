@@ -32,11 +32,11 @@ You can install the POLAR-BEAR-EUA pipeline and all its dependencies manually.
 
 2. Clone or download the repository form Github
 
-        git clone https://github.com/aidenlab/POLAR-BEAR-EUA.git
-        curl -sSL -o Polar.zip https://github.com/aidenlab/POLAR-BEAR/archive/eua.zip
+        git clone https://github.com/aidenlab/POLAR-BEAR.git --branch eua POLAR-BEAR-EUA
 
         or...
 
+        curl -sSL -o POLAR-BEAR-EUA.zip https://github.com/aidenlab/POLAR-BEAR/archive/eua.zip
         mkdir -p POLAR-BEAR-EUA
         unzip POLAR-BEAR-EUA.zip -d POLAR-BEAR-EUA
 
@@ -50,16 +50,22 @@ If you already have a Anaconda/Miniconda installation then you can create a cond
 
 1. Clone or download the Polar pipeline
 
-        git clone https://github.com/aidenlab/POLAR-BEAR-EUA.git
+        git clone https://github.com/aidenlab/POLAR-BEAR.git --branch eua POLAR-BEAR-EUA
+
+        or...
+
+        curl -sSL -o POLAR-BEAR-EUA.zip https://github.com/aidenlab/POLAR-BEAR/archive/eua.zip
+        mkdir -p POLAR-BEAR-EUA
+        unzip POLAR-BEAR-EUA.zip -d POLAR-BEAR-EUA
 
 2. Create the conda environment
 
-        conda env create -n polar_eua_conda_env -f ./POLAR-EUA/polar_eua_conda_env.yml
+        conda env create -n polar_eua_conda_env -f POLAR-BEAR-EUA/polar_eua_conda_env.yml
 
-3. Activate the conda environment and execute a Polar test
+3. Activate the conda environment and run the test
 
         conda activate polar_eua_conda_env    
-        cd ./POLAR-BEAR-EUA/test
+        cd POLAR-BEAR-EUA/test
         ../run_polar_bear_eua_pipline.sh
         conda deactivate
 
@@ -78,9 +84,8 @@ Breadth of coverage statistics and coverage data are gathered after alignment is
     Usage: run_polar_bear_eua_pipline.sh [-d TOP_DIR] [-t THREADS] -h
             -d  Top level directory which must contain a subdirectory (fastq/) with fastq files
             -t  Number of threads for BWA alignment (Default: 16)
+            -s  Sample sheet with index IDs
             -h  Print this help and exit
-
-Send in the number of threads you wish to use for BWA alignment via `-t threads`.
 
 ## Setup and output folders
 
@@ -88,6 +93,8 @@ Place the paired end sequenced reads in a folder labeled `fastq`.
 For example, if your experiment is called "Library1", you should have
 a folder labeled "Library1" and it should contain one subfolder labeled
 "fastq" with the fastq files in it.The fastqs can be zipped or unzipped, and there can be multiple pairs.
+
+![Pipline image](assets/polar_bear_eua_pipeline_overview.png)
 
 The pipeline will create folders work folder called "polar-bear-fda-eua" under "Library1". In addtion, the piplinee will create sub-folders called "aligned" and "debug" under the "polar-bear-fda-eua" folder. The "final" folder will contain the diagnsotic result from "Library1" in a CSV file called result.csv.
 
