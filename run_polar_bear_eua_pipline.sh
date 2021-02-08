@@ -132,7 +132,7 @@ fi
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
 
 # Remove recombinant reads
-echo "${REMRECOMBO}" "${NT_TO_IS}" ${WORK_DIR}/aligned/sorted_merged.bam 0  2> ${WORK_DIR}/debug/recombo.out
+"${REMRECOMBO}" "${NT_TO_IS}" ${WORK_DIR}/aligned/sorted_merged.bam 0  2> ${WORK_DIR}/debug/recombo.out
 
 # Get coverage of viral reference from read catagories
 echo "ʕ·ᴥ·ʔ : Analyzing Coverage..."
