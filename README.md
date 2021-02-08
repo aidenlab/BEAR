@@ -84,7 +84,6 @@ Breadth of coverage statistics and coverage data are gathered after alignment is
     Usage: run_polar_bear_eua_pipline.sh [-d TOP_DIR] [-t THREADS] -h
             -d  Top level directory which must contain a subdirectory (fastq/) with fastq files
             -t  Number of threads for BWA alignment (Default: 16)
-            -s  Sample sheet with index IDs
             -h  Print this help and exit
 
 ## Setup and output folders

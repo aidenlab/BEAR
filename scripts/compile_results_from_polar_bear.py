@@ -1,23 +1,13 @@
 import pandas as pd
 import argparse
 
-polar_control_index_ids = ['A:H6'
-                           'A:H12'
-                           'B:H6'
-                           'B:H12'
-                           'C:H6'
-                           'C:H12'
-                           'D:H6'
-                           'D:H12']
 
-
-def compile_results_into_file(libname_var, all_align_stats_file, viral_align_stats_file,
-                              viral_depth_per_base, path_to_clinical_result, path_to_qc_result):
-    n50_var = 'NA'
-    min_length_var = 'NA'
-    max_length_var = 'NA'
-    sum_length_var = 'NA'
-    number_of_contigs_var = 'NA'
+def compile_results_into_file(library_name, top_directory):
+    all_align_stats_file = str(top_directory) + "/aligned/all_alignment_stats.txt"
+    viral_align_stats_file = str(top_directory) + "/aligned/viral_alignment_stats.txt"
+    viral_depth_per_base = str(top_directory) + "/aligned/viral_depth_per_base.txt"
+    path_to_qc_result = str(top_directory) + "/aligned/qc_stats.txt"
+    path_to_clinical_result = str(top_directory) + "/final/result.csv"
 
     with open(viral_align_stats_file) as viral_stat_file:
         for line in viral_stat_file:
@@ -35,8 +25,6 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
         for line in all_stat_file:
             if 'paired in sequencing' in line:
                 reads = int(line.split()[0])
-            if 'Index ID:' in line:
-                index_id = str(line.split()[2])
 
     total_reads_var = f"{int((reads / 2)):,}"
     mapped_reads_var = str(round((mapped * 100 / reads), 1)) + '% (' + str(f"{int(mapped):,}") + ')'
@@ -53,28 +41,17 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
     else:
         clinical_result_var = "Negative"
 
-    if index_id in polar_control_index_ids:
-        sample_type_var = "Negative Control"
-    elif index_id == "UNK":
-        sample_type_var = "Unknown Sample"
-    else:
-        sample_type_var = "Clinical Sample"
-
-    qc_stats_to_write = '{0}\n{1}\n{2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}\n{9}\n{10}\n{11}'.format(
-        "Library name ," + str(libname_var),
+    qc_stats_to_write = '{0}\n{1}\n{2}\n{3}\n{4}\n{5}\n{6}'.format(
+        "Library name ," + str(library_name),
         "Total reads ," + str(total_reads_var),
         "Aligned reads ," + str(mapped_reads_var),
         "BoC ," + str(breadth_of_coverage_var),
         "Duplicates ," + str(dup_reads_var),
         "Insert ," + str(insert_var),
-        "Insert deviation ," + str(insert_dev_var),
-        "Number of Contigs ," + str(number_of_contigs_var),
-        "Assembly size ," + str(sum_length_var),
-        "Smallest contig size ," + str(min_length_var),
-        "Largest contig size ," + str(max_length_var),
-        "Contig N50 ," + str(n50_var))
+        "Insert deviation ," + str(insert_dev_var)
+    )
 
-    clinical_result_to_write = str(libname_var) + "," + str(clinical_result_var) + "," + str(sample_type_var)
+    clinical_result_to_write = str(library_name) + "," + str(clinical_result_var)
 
     with open(path_to_qc_result, 'w') as qc_file:
         qc_file.write(qc_stats_to_write)
@@ -86,14 +63,9 @@ def compile_results_into_file(libname_var, all_align_stats_file, viral_align_sta
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Compile POLAR-BEAR results and QC data to file')
-    parser.add_argument('libname_var', type=str)
-    parser.add_argument('all_align_stats_file', type=str)
-    parser.add_argument('viral_align_stats_file', type=str)
-    parser.add_argument('viral_depth_per_base', type=str)
-    parser.add_argument('path_to_clinical_result', type=str)
-    parser.add_argument('path_to_qc_result', type=str)
+    parser = argparse.ArgumentParser(description='Compile POLAR-BEAR results and QC data')
+    parser.add_argument('library_name', type=str)
+    parser.add_argument('top_directory', type=str)
     arg = parser.parse_args()
 
-    compile_results_into_file(arg.libname_var, arg.all_align_stats_file, arg.viral_align_stats_file,
-                              arg.viral_depth_per_base, arg.path_to_clinical_result, arg.path_to_qc_result)
+    compile_results_into_file(arg.library_name, arg.top_directory)

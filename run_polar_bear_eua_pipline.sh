@@ -14,8 +14,7 @@ REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo"
 NT_TO_IS="${PIPELINE_DIR}/scripts/accugenomics/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
 AMPLICONS="${PIPELINE_DIR}/scripts/accugenomics/VarDict-amplicon.v2.1.bed"
 NON_CROSS_REACT_REGIONS="${PIPELINE_DIR}/references/non_sars_cross_reactive_sars_cov_2_regions.bed"
-COMPILE_RESULT="${PIPELINE_DIR}/scripts/compile_results.py"
-GET_INDEX="${PIPELINE_DIR}/scripts/get_index_ID.sh"
+COMPILE_RESULT="${PIPELINE_DIR}/scripts/compile_results_from_polar_bear.py"
 
 # Misc vars
 PATHOGEN_NAME="Sars-CoV-2"
@@ -38,7 +37,7 @@ PRINTHELPANDEXIT
 exit
 }
 
-while getopts "d:t:h" opt;
+while getopts "d:t:sh" opt;
 do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
@@ -75,13 +74,13 @@ else
     exit
 fi
 
-export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
+export WORK_DIR=${TOP_DIR}polar-bear-fda-eua
 
 # Check to make sure output folders do not already exist 
 if ! mkdir "${WORK_DIR}" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}! Exiting!"; exit 1; fi
-if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/aligned! Exiting!"; exit 1; fi
-if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
-if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
+if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}aligned! Exiting!"; exit 1; fi
+if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}debug! Exiting!"; exit 1; fi
+if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}final! Exiting!"; exit 1; fi
 
 # Create an array comprised of a FASTQ files
 declare -a read1files=()
@@ -147,13 +146,13 @@ samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | 
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-good.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" 2> ${WORK_DIR}/debug/good_dedup.out
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_IS.bam" 2> ${WORK_DIR}/debug/IS_dedup.out
 
-# Gather alignment qc statistics
+# Get BoC
 # To avoid cross-reaction with SARS a few regions are excluded from analysis
 samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" | awk '$1=="MN908947.3"' > ${WORK_DIR}/aligned/viral_depth_per_base.txt 2> ${WORK_DIR}/debug/viral_depth.out
 
+# Gather alignment qc statistics
 echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt 
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
-bash $GET_INDEX -d "${TOP_DIR}/fastq" >> ${WORK_DIR}/aligned/all_alignment_stats.txt
 
 echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
@@ -161,8 +160,8 @@ samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> 
 echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
-
+# Write results to a file
 echo "ʕ·ᴥ·ʔ : Compiling results" 
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
-python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}/aligned/all_alignment_stats.txt ${WORK_DIR}/aligned/viral_alignment_stats.txt ${WORK_DIR}/aligned/viral_depth_per_base.txt ${WORK_DIR}/final/result.csv ${WORK_DIR}/aligned/qc_stats.txt
+python $COMPILE_RESULT $LIB_NAME ${WORK_DIR}
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"
