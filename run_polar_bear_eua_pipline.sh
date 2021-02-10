@@ -1,31 +1,6 @@
 #!/usr/local/bin/bash
 ### Polar BEAR FDA EUA pipeline
 
-### Threads
-THREADS=16
-
-### PATHS
-TOP_DIR=$(pwd)
-LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
-PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-### Scripts
-REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo.sh"
-NT_TO_IS="${PIPELINE_DIR}/scripts/accugenomics/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
-AMPLICONS="${PIPELINE_DIR}/scripts/accugenomics/VarDict-amplicon.v2.1.bed"
-NON_CROSS_REACT_REGIONS="${PIPELINE_DIR}/references/non_sars_cross_reactive_sars_cov_2_regions.bed"
-COMPILE_RESULT="${PIPELINE_DIR}/scripts/compile_results_from_polar_bear.py"
-
-### SSQC Settings
-QCUTOFF=0
-GOODBASECHANGE=1
-PE=0
-SEQSPLIT=1
-
-### Misc vars
-PATHOGEN_NAME="Sars-CoV-2"
-REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_accukit_ISv0.4.1.fasta"
-
 printHelpAndExit() {
     cat <<PRINTHELPANDEXIT
 Program: POLAR-BEAR (POLAR Bioinformatics Evaluation of Assembly and Resequencing)
@@ -51,6 +26,40 @@ do
         h) printHelpAndExit ;;
     esac
 done
+
+### Threads
+if [ -z $THREADS ];
+then
+    THREADS=16
+fi
+
+### PATHS
+if [ -z $TOP_DIR ];
+then
+    TOP_DIR=$(pwd)
+fi
+
+PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
+
+### Scripts
+REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo.sh"
+NT_TO_IS="${PIPELINE_DIR}/scripts/accugenomics/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
+AMPLICONS="${PIPELINE_DIR}/scripts/accugenomics/VarDict-amplicon.v2.1.bed"
+NON_CROSS_REACT_REGIONS="${PIPELINE_DIR}/references/non_sars_cross_reactive_sars_cov_2_regions.bed"
+COMPILE_RESULT="${PIPELINE_DIR}/scripts/compile_results_from_polar_bear.py"
+
+### SSQC Settings
+QCUTOFF=0
+GOODBASECHANGE=1
+PE=0
+SEQSPLIT=1
+
+### Misc vars
+PATHOGEN_NAME="Sars-CoV-2"
+REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_accukit_ISv0.4.1.fasta"
+
+
 
 # Check for required installed software
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
@@ -170,4 +179,4 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 # Write results to a file
 echo "ʕ·ᴥ·ʔ : Compiling results" 
 python $COMPILE_RESULT $LIB_NAME $WORK_DIR
-echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR} for diagnositc result"
+echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
