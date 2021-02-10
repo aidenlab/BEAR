@@ -8,6 +8,7 @@ def compile_results_into_file(library_name, top_directory):
     viral_depth_per_base = str(top_directory) + "/aligned/viral_depth_per_base.txt"
     path_to_qc_result = str(top_directory) + "/aligned/qc_stats.txt"
     path_to_clinical_result = str(top_directory) + "/final/result.csv"
+    amplicon_control_counts = str(top_directory) + "/aligned/ampliconCoverage.txt"
 
     with open(viral_align_stats_file) as viral_stat_file:
         for line in viral_stat_file:
@@ -25,6 +26,9 @@ def compile_results_into_file(library_name, top_directory):
         for line in all_stat_file:
             if 'paired in sequencing' in line:
                 reads = int(line.split()[0])
+    with open(amplicon_control_counts) as amplicon_control_counts_file:
+        lines = amplicon_control_counts_file.readlines()
+        control_count = (lines[1].split()[1])
 
     total_reads_var = f"{int((reads / 2)):,}"
     mapped_reads_var = str(round((mapped * 100 / reads), 1)) + '% (' + str(f"{int(mapped):,}") + ')'
@@ -38,6 +42,8 @@ def compile_results_into_file(library_name, top_directory):
 
     if float(breadth_of_coverage_var) >= 5:
         clinical_result_var = "Positive"
+    elif int(control_count) > 200:
+        clinical_result_var = "Inconclusive"
     else:
         clinical_result_var = "Negative"
 
