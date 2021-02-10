@@ -1,7 +1,7 @@
 #!/usr/local/bin/bash
 ### Polar BEAR FDA EUA pipeline
 
-## Threads
+### Threads
 THREADS=16
 
 ### PATHS
@@ -9,14 +9,20 @@ TOP_DIR=$(pwd)
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
 PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Scripts
-REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo"
+### Scripts
+REMRECOMBO="${PIPELINE_DIR}/scripts/accugenomics/remRecombo.sh"
 NT_TO_IS="${PIPELINE_DIR}/scripts/accugenomics/NT_IS_LOOKUP_TABLE_v0.4.2_seperate.txt"
 AMPLICONS="${PIPELINE_DIR}/scripts/accugenomics/VarDict-amplicon.v2.1.bed"
 NON_CROSS_REACT_REGIONS="${PIPELINE_DIR}/references/non_sars_cross_reactive_sars_cov_2_regions.bed"
 COMPILE_RESULT="${PIPELINE_DIR}/scripts/compile_results_from_polar_bear.py"
 
-# Misc vars
+### SSQC Settings
+QCUTOFF=0
+GOODBASECHANGE=1
+PE=0
+SEQSPLIT=1
+
+### Misc vars
 PATHOGEN_NAME="Sars-CoV-2"
 REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_accukit_ISv0.4.1.fasta"
 
@@ -112,32 +118,33 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
-    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.bam"
+    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
     # Sort reads based on position for deduping 
-    samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.bam" $ALIGNED_FILE"_matefixd.bam" 2> ${WORK_DIR}/debug/sort.out
+    samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
 done
 
 # Merge BAMs if multiple BAMs were generated
-if samtools merge ${WORK_DIR}/aligned/sorted_merged.bam ${WORK_DIR}/aligned/*_matefixd_sorted.bam 2> ${WORK_DIR}/debug/merge.out
-then
-    # Clean up files
-    rm ${WORK_DIR}/aligned/*_sorted.bam 
-    rm ${WORK_DIR}/aligned/*.sam  
-    rm ${WORK_DIR}/aligned/*"_mapped"*bam  
-fi
-
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/merge.out
 
 ####### Second block of work: Seperate viral data from control data 
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
 
-# Remove recombinant reads
-"${REMRECOMBO}" "${NT_TO_IS}" ${WORK_DIR}/aligned/sorted_merged.bam 0  2> ${WORK_DIR}/debug/recombo.out
+"${REMRECOMBO}" "${NT_TO_IS}" "${WORK_DIR}/aligned/sorted_merged.sam" "${QCUTOFF}" "${GOODBASECHANGE}" "${PE}" "${SEQSPLIT}" 2> ${WORK_DIR}/debug/recombo.out
+
+for SAM in ${WORK_DIR}/aligned/*sam;
+do
+    samtools view -hb $SAM > ${SAM%.sam}".bam"
+    rm $SAM
+done
 
 # Get coverage of viral reference from read catagories
 echo "ʕ·ᴥ·ʔ : Analyzing Coverage..."
 
-echo $'virus\taccukit\tchimeras'  > ${WORK_DIR}/aligned/ampliconCoverage.txt 
+samtools index "${WORK_DIR}/aligned/sorted_merged-good.bam"
+samtools index "${WORK_DIR}/aligned/sorted_merged-IS.bam"
+samtools index "${WORK_DIR}/aligned/sorted_merged-bad.bam"
+echo $'virus\taccukit\tchimeras'  > ${WORK_DIR}/aligned/ampliconCoverage.txt
 samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
 samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/ { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
 samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
