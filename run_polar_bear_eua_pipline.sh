@@ -113,7 +113,7 @@ done
 
 
 ####### First block of work: Alignment of reads to reference
-echo -e "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
+echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
 
 for ((i = 0; i < ${#read1files[@]}; ++i)); do
     file1=${read1files[$i]}
