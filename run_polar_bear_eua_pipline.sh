@@ -104,13 +104,19 @@ else
     exit
 fi
 
-export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
+if  [ "$APP_MODE" = 1 ]
+then
+  export WORK_DIR=${PIPELINE_DIR}/polar-bear-fda-eua
+else
+  export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
+fi
 
 # Check to make sure output folders do not already exist
 if ! mkdir "${WORK_DIR}" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/aligned! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/final! Exiting!"; exit 1; fi
+
 
 # Create an array comprised of a FASTQ files
 declare -a read1files=()
@@ -125,7 +131,6 @@ do
     read1files+=($name1$ext)
     read2files+=($name2$ext)
 done
-
 
 ####### First block of work: Alignment of reads to reference
 echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
