@@ -12,17 +12,19 @@ Options:
 
    -d  Top level directory which must contain a subdirectory (fastq/) with fastq files
    -t  Number of threads for BWA alignment (Default: $THREADS)
+   -a  Native App mode
    -h  Print this help and exit
 
 PRINTHELPANDEXIT
 exit
 }
 
-while getopts "d:t:sh" opt;
+while getopts "d:t:sha" opt;
 do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
         t) THREADS=$OPTARG ;;
+        a) APP_MODE=1 ;;
         h) printHelpAndExit ;;
     esac
 done
@@ -68,10 +70,18 @@ REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_acc
 
 # Check for required installed software
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
+
+if  [ "$APP_MODE" = 1 ]
+then
+  PYTHON=python3
+else
+  PYTHON=python
+fi
+
 command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it's not installed!"; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
-command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
+command -v "${PYTHON}" >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
 
 # Check for data (FASTQ) files
 # We assume the files exist in a "fastq" directory
@@ -183,6 +193,5 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 # Write results to a file
 echo "ʕ·ᴥ·ʔ : Compiling results"
-python $COMPILE_RESULT $LIB_NAME $WORK_DIR
+"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
-python app/POLAR-BEAR-eua/scripts/compile_results_from_polar_bear.py test app/test/polar-bear-fda-eua
