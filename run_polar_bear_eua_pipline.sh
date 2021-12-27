@@ -1,12 +1,12 @@
 #!/usr/local/bin/bash
-### Polar BEAR FDA EUA pipeline
+## Polar BEAR FDA EUA pipeline
 
 printHelpAndExit() {
     cat <<PRINTHELPANDEXIT
 Program: POLAR-BEAR (POLAR Bioinformatics Evaluation of Assembly and Resequencing)
 Version: 2.0
 Contact: Neva Durand <neva@broadinstitute.org> & Per Adastra <adastra.aspera.per@gmail.com>
-Usage:  
+Usage:
         $0 [options]
 Options:
 
@@ -38,7 +38,7 @@ if [ -z $TOP_DIR ];
 then
     TOP_DIR=$(pwd)
 fi
-
+#
 PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
 
@@ -65,7 +65,7 @@ REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_acc
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
 command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it's not installed!"; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
-command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Python required but it's not installed!"; exit 1; }
+command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
 
 # Check for data (FASTQ) files
@@ -91,7 +91,7 @@ fi
 
 export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 
-# Check to make sure output folders do not already exist 
+# Check to make sure output folders do not already exist
 if ! mkdir "${WORK_DIR}" >/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/aligned! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
@@ -104,7 +104,7 @@ declare -a read2files=()
 for i in ${read1}
 do
     ext=${i#*$READ1_STR}
-    name=${i%$READ1_STR*}                                                                          
+    name=${i%$READ1_STR*}
     name1=${name}${READ1_STR}
     name2=${name}${READ2_STR}
     read1files+=($name1$ext)
@@ -118,25 +118,25 @@ echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME referen
 for ((i = 0; i < ${#read1files[@]}; ++i)); do
     file1=${read1files[$i]}
     file2=${read2files[$i]}
-    
+
     FILE=$(basename ${file1%$read1str})
     ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
 
     # Align reads to viral reference
     bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
-    
+
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
-    # Sort reads based on position for deduping 
+    # Sort reads based on position for deduping
     samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
 done
 
 # Merge BAMs if multiple BAMs were generated
 samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/merge.out
 
-####### Second block of work: Seperate viral data from control data 
+####### Second block of work: Seperate viral data from control data
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
 
 "${REMRECOMBO}" "${NT_TO_IS}" "${WORK_DIR}/aligned/sorted_merged.sam" "${QCUTOFF}" "${GOODBASECHANGE}" "${PE}" "${SEQSPLIT}" 2> ${WORK_DIR}/debug/recombo.out
@@ -154,11 +154,11 @@ samtools index "${WORK_DIR}/aligned/sorted_merged-good.bam"
 samtools index "${WORK_DIR}/aligned/sorted_merged-IS.bam"
 samtools index "${WORK_DIR}/aligned/sorted_merged-bad.bam"
 echo $'virus\taccukit\tchimeras'  > ${WORK_DIR}/aligned/ampliconCoverage.txt
-samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
-samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/ { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt 
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/ { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
 samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
 
-# Mark dups     
+# Mark dups
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-good.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" 2> ${WORK_DIR}/debug/good_dedup.out
 samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_IS.bam" 2> ${WORK_DIR}/debug/IS_dedup.out
 
@@ -167,16 +167,17 @@ samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned
 samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" | awk '$1=="MN908947.3"' > ${WORK_DIR}/aligned/viral_depth_per_base.txt 2> ${WORK_DIR}/debug/viral_depth.out
 
 # Gather alignment qc statistics
-echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt 
+echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
 
 echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
-echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
+echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
 # Write results to a file
-echo "ʕ·ᴥ·ʔ : Compiling results" 
+echo "ʕ·ᴥ·ʔ : Compiling results"
 python $COMPILE_RESULT $LIB_NAME $WORK_DIR
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
+python3 app/POLAR-BEAR-eua/scripts/compile_results_from_polar_bear.py test app/test/polar-bear-fda-eua

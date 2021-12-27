@@ -1,11 +1,10 @@
 # Per Adastra Files
 *.paa*
+test/polar-bear-fda-eua
+dev/
 
 # Apple stuff
 .DS_Store
-
-# Testing
-test/polar-bear-fda-eua
 
 # Virtual env
 scripts/venv
