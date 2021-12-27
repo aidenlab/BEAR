@@ -65,7 +65,7 @@ REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_acc
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
 command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it's not installed!"; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
-command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
+command -v python >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Python required but it's not installed!"; exit 1; }
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
 
 # Check for data (FASTQ) files
