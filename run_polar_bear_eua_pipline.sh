@@ -185,4 +185,4 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 echo "ʕ·ᴥ·ʔ : Compiling results"
 python $COMPILE_RESULT $LIB_NAME $WORK_DIR
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
-python3 app/POLAR-BEAR-eua/scripts/compile_results_from_polar_bear.py test app/test/polar-bear-fda-eua
+python app/POLAR-BEAR-eua/scripts/compile_results_from_polar_bear.py test app/test/polar-bear-fda-eua
