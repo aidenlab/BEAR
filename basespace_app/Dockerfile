@@ -55,10 +55,11 @@ RUN mkdir /usr/bedtools && \
 	chmod a+x bedtools && \
 	ln -s $PWD/bedtools /usr/local/bin/
 
-# clone POLAR BEAR native app repo
+# clone POLAR BEAR repo and clean up
 RUN git clone -b eua https://github.com/aidenlab/POLAR-BEAR && \
     cd POLAR-BEAR && \
-    git checkout 67dc195fa77fe5f2aa57d40a208d288993ef87e4
+    git checkout 67dc195fa77fe5f2aa57d40a208d288993ef87e4 && \
+    rm -r assets test README.md polar_eua_conda_env.yml prepare_polar_eua_conda_env.sh
 
 # install python requirements
 RUN pip3 install -r POLAR-BEAR/basespace_app/requirements.txt && rm POLAR-BEAR/basespace_app/requirements.txt
