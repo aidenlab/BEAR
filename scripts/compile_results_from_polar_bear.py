@@ -1,8 +1,6 @@
 import pandas as pd
 import argparse
 
-
-
 def format_number_w_commads(number):
     return f"{int((number)):,}"
 
