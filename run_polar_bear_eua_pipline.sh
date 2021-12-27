@@ -12,7 +12,6 @@ Options:
 
    -d  Top level directory which must contain a subdirectory (fastq/) with fastq files
    -t  Number of threads for BWA alignment (Default: $THREADS)
-   -a  Native App mode
    -h  Print this help and exit
 
 PRINTHELPANDEXIT
@@ -24,10 +23,15 @@ do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
         t) THREADS=$OPTARG ;;
-        a) APP_MODE=1 ;;
         h) printHelpAndExit ;;
     esac
 done
+
+### Determine if running in BaseSpace
+if [ -f POLAR-BEAR/native.app.txt ];
+then
+  APP_MODE=1
+fi
 
 ### Threads
 if [ -z $THREADS ];
