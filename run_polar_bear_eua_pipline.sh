@@ -38,7 +38,14 @@ if [ -z $TOP_DIR ];
 then
     TOP_DIR=$(pwd)
 fi
-#
+
+# Make sure top directory does not include a '/'
+END_OF_TOP_DIR=$(echo $TOP_DIR | rev | head -c 1)
+if  [ "$END_OF_TOP_DIR" = "/" ]
+then
+  TOP_DIR=$(echo $TOP_DIR | rev | cut -c2- | rev)
+fi
+
 PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LIB_NAME=$(echo $TOP_DIR | awk -F "/" '{print $NF}')
 
@@ -58,8 +65,6 @@ SEQSPLIT=1
 ### Misc vars
 PATHOGEN_NAME="Sars-CoV-2"
 REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_accukit_ISv0.4.1.fasta"
-
-
 
 # Check for required installed software
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
