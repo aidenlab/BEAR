@@ -108,7 +108,7 @@ fi
 
 if  [ "$APP_MODE" = 1 ]
 then
-  export WORK_DIR="/data/scratch/polar-bear-fda-eua"
+  export WORK_DIR="data/scratch/polar-bear-fda-eua"
 else
   export WORK_DIR="${TOP_DIR}/polar-bear-fda-eua"
 fi
@@ -120,7 +120,8 @@ if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable
 if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/final! Exiting!"; exit 1; fi
 
-ls -lht "${WORK_DIR}"
+ls "/data/scratch/" > data/logs/output_check.txt
+
 ## Create an array comprised of a FASTQ files
 #declare -a read1files=()
 #declare -a read2files=()
@@ -134,7 +135,7 @@ ls -lht "${WORK_DIR}"
 #    read1files+=($name1$ext)
 #    read2files+=($name2$ext)
 #done
-
+#
 ######## First block of work: Alignment of reads to reference
 #echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
 #
@@ -159,6 +160,8 @@ ls -lht "${WORK_DIR}"
 ## Merge BAMs if multiple BAMs were generated
 #samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/merge.out
 #
+#ls -lht "/data/scratch/polar-bear-fda-eua/aligned" > data/logs/check_aligned.txt
+
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
 #
