@@ -52,9 +52,6 @@ def get_app_data_from_json(jsonObject):
 
     return sampleDir, projectID, bearOutDir
 
-def make_output_folder_in_basespace(bearOutDir):
-    # create output folder for BEAR pipeline in the project folder
-    os.system('mkdir -p "%s"' %(bearOutDir))
 
 def create_file_trigger_for_bear_pipeline(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
@@ -77,6 +74,6 @@ def run_polar_bear():
 if __name__ == "__main__":
     jsonAppObject = load_appsession_json()
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
-    make_output_folder_in_basespace(bearOutDir)
+    create_file_trigger_for_bear_pipeline(bearOutDir)
     run_polar_bear()
 
