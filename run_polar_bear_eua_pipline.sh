@@ -18,7 +18,7 @@ PRINTHELPANDEXIT
 exit
 }
 
-while getopts "d:t:sha" opt;
+while getopts "d:t:sh" opt;
 do
     case $opt in
         d) TOP_DIR=$OPTARG ;;
@@ -31,6 +31,10 @@ done
 if [ -f POLAR-BEAR/native.app.txt ];
 then
   APP_MODE=1
+  basespace_output_path_for_sample=$(awk 'NR==1 {print; exit}' POLAR-BEAR/native.app.txt)
+  PYTHON=python3
+else
+  PYTHON=python
 fi
 
 ### Threads
@@ -75,17 +79,11 @@ REFERENCE="${PIPELINE_DIR}/references/sars_cov_2_accukit_ISv0.4.1/sars_cov_2_acc
 # Check for required installed software
 echo "ʕ·ᴥ·ʔ : Checking dependencies..."
 
-if  [ "$APP_MODE" = 1 ]
-then
-  PYTHON=python3
-else
-  PYTHON=python
-fi
 
 command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it's not installed!"; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
-command -v "${PYTHON}" >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : ython required but it's not installed!"; exit 1; }
+command -v "${PYTHON}" >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Python required but it's not installed!"; exit 1; }
 
 # Check for data (FASTQ) files
 # We assume the files exist in a "fastq" directory
@@ -110,7 +108,7 @@ fi
 
 if  [ "$APP_MODE" = 1 ]
 then
-  export WORK_DIR=${PIPELINE_DIR}/polar-bear-fda-eua
+  export WORK_DIR="/data/scratch"
 else
   export WORK_DIR=${TOP_DIR}/polar-bear-fda-eua
 fi
@@ -204,3 +202,17 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 echo "ʕ·ᴥ·ʔ : Compiling results"
 "${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
+
+if  [ "$APP_MODE" = 1 ]
+then
+  mkdir "${basespace_output_path_for_sample}/alignments/"
+  mv "${WORK_DIR}/aligned/sorted_merged-good.bam" "${basespace_output_path_for_sample}/alignments/"
+  mv "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${basespace_output_path_for_sample}/alignments/"
+  mv "${WORK_DIR}/aligned/sorted_merged-bad.bam" "${basespace_output_path_for_sample}/alignments/"
+
+  mkdir "${basespace_output_path_for_sample}/results/"
+  mv "${WORK_DIR}/final/*" "${basespace_output_path_for_sample}/results/"
+
+  mv "${WORK_DIR}/debug/*" data/logs/
+
+fi
