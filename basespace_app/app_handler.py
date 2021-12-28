@@ -1,4 +1,5 @@
 import os
+import subprocess
 import json
 
 # load json file
@@ -31,7 +32,7 @@ def load_appsession_json(jsonPath='/data/input/AppSession.json'):
 def get_app_data_from_json(jsonObject):
     # get info necessary to
     # determine the number of properties
-    numberOfPropertyItems = len(json['Properties']['Items'])
+    numberOfPropertyItems = len(jsonObject['Properties']['Items'])
 
     # get "projectID" and "sampleID" information
     projectID = []
@@ -63,16 +64,20 @@ def write_to_parameter_file(bearOutDir, parameterData):
     parameterFile.close()
 
 def run_polar_bear():
-    # bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", topDir]
-    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-h"]
-    bear_out = subprocess.call(bear_command)
-    return bear_out
+    # create & open log file for bear pipeline
+    bear_pipeline_log = open('data/logs/polar_bear_eua_pipline_log.txt', 'w')
+
+    # run bear command
+    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", "POLAR-BEAR/test"]
+    bear_out = subprocess.call(bear_command, stdout=bear_pipeline_log)
+
+    # close log file for bear pipeline
+    bear_pipeline_log.close()
 
 
 if __name__ == "__main__":
     jsonAppObject = load_appsession_json()
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
     make_output_folder_in_basespace(bearOutDir)
-    bear_out = run_polar_bear()
-    write_to_parameter_file(bearOutDir, bear_out)
+    run_polar_bear()
 
