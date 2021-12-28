@@ -59,7 +59,7 @@ RUN mkdir /usr/bedtools && \
 RUN git clone -b eua https://github.com/aidenlab/POLAR-BEAR && \
     cd POLAR-BEAR && \
     git checkout 023572ce5ca363183b0d150e9a3158d5904babc3 && \
-    rm -r assets test README.md polar_eua_conda_env.yml prepare_polar_eua_conda_env.sh
+    rm -r assets README.md polar_eua_conda_env.yml prepare_polar_eua_conda_env.sh
 
 # install python requirements
 RUN pip3 install -r POLAR-BEAR/basespace_app/requirements.txt && rm POLAR-BEAR/basespace_app/requirements.txt
