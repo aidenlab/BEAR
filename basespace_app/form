@@ -1,0 +1,31 @@
+{
+    "$type": "Form",
+    "fields": [
+        {
+            "$type": "ProjectChooser",
+            "size": 250,
+            "valueType": "Output",
+            "allowedPermissions": "owner",
+            "label": "Output Project",
+            "required": true,
+            "requiredMessage": "Please choose a project",
+            "id": "project-id"
+        },
+        {
+            "$type": "SectionBreak",
+            "title": "Input"
+        },
+
+        {
+            "$type": "SampleChooser",
+            "size": 300,
+            "allowedPermissions": "read",
+            "multiselect": false,
+            "label": "Input Sample",
+            "required": true,
+            "requiredMessage": "Please choose a sample",
+            "id": "sample-id"
+        }
+    ],
+    "id": "form-container"
+}
