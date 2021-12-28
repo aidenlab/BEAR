@@ -56,11 +56,10 @@ def make_output_folder_in_basespace(bearOutDir):
     # create output folder for BEAR pipeline in the project folder
     os.system('mkdir -p "%s"' %(bearOutDir))
 
-def write_to_parameter_file(bearOutDir, parameterData):
+def create_file_trigger_for_bear_pipeline(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
-    file = '%s/parameters.csv' %(bearOutDir)
-    parameterFile = open(file ,'w')
-    parameterFile.write(parameterData)
+    parameterFile = open("POLAR-BEAR/native.app.txt" ,'w')
+    parameterFile.write(bearOutDir)
     parameterFile.close()
 
 def run_polar_bear():
