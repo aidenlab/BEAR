@@ -200,6 +200,7 @@ echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignmen
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
 ls ${WORK_DIR}/aligned/* > data/logs/check_5.txt
+
 ## Write results to a file
 #echo "ʕ·ᴥ·ʔ : Compiling results"
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
