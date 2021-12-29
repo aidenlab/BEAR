@@ -152,13 +152,13 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
     # Sort reads based on position for deduping
-    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam"
+    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/merge.out
 done
 
 # Merge BAMs if multiple BAMs were generated
 samtools merge "${WORK_DIR}/aligned/sorted_merged.sam" "${WORK_DIR}/aligned/*_matefixd_sorted.sam" 2> ${WORK_DIR}/debug/merge.out
 
-ls "${WORK_DIR}/aligned/" > data/logs/check.txt
+ls "${WORK_DIR}/aligned/" > data/logs/check_me.txt
 
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
