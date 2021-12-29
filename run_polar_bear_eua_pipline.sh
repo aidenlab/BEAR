@@ -157,7 +157,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 
 done
 
-mv "data/scratch/polar-bear-fda-eua/aligned/subsample_R1.fastq_mapped.sam" data/logs/
+mv "data/scratch/polar-bear-fda-eua/aligned/subsample_R1.fastq_mapped_matefixd_sorted.sam" data/logs/
 
 # Merge BAMs if multiple BAMs were generated
 #samtools merge "${WORK_DIR}/aligned/sorted_merged.sam" "${WORK_DIR}/aligned/*_matefixd_sorted.sam" 2> ${WORK_DIR}/debug/merge.out
