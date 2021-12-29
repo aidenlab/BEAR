@@ -48,7 +48,7 @@ def get_app_data_from_json(jsonObject):
     sampleDir = '/data/input/samples/%s' % (sampleID[sample])
 
     # set output directory
-    bearOutDir = '/data/output/appresults/%s/%s' % (projectID, "polar_bear")
+    bearOutDir = '/data/output/appresults/%s' % (projectID)
 
     return sampleDir, projectID, bearOutDir
 
