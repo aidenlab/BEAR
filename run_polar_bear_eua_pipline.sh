@@ -120,47 +120,45 @@ if ! mkdir "${WORK_DIR}/aligned">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable
 if ! mkdir "${WORK_DIR}/debug">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/debug! Exiting!"; exit 1; fi
 if ! mkdir "${WORK_DIR}/final">/dev/null 2>&1; then echo "ʕ·ᴥ·ʔ : Unable to create ${WORK_DIR}/final! Exiting!"; exit 1; fi
 
-ls "/data/scratch/" > data/logs/output_check.txt
+# Create an array comprised of a FASTQ files
+declare -a read1files=()
+declare -a read2files=()
 
-## Create an array comprised of a FASTQ files
-#declare -a read1files=()
-#declare -a read2files=()
-#
-#for i in ${read1}
-#do
-#    ext=${i#*$READ1_STR}
-#    name=${i%$READ1_STR*}
-#    name1=${name}${READ1_STR}
-#    name2=${name}${READ2_STR}
-#    read1files+=($name1$ext)
-#    read2files+=($name2$ext)
-#done
-#
-######## First block of work: Alignment of reads to reference
-#echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
-#
-#for ((i = 0; i < ${#read1files[@]}; ++i)); do
-#    file1=${read1files[$i]}
-#    file2=${read2files[$i]}
-#
-#    FILE=$(basename ${file1%$read1str})
-#    ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
-#
-#    # Align reads to viral reference
-#    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
-#
-#    # Samtools fixmate fills in mate coordinates and insert size fields for deduping
-#    # Samtools fixmate is also converting SAM to BAM
-#    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
-#
-#    # Sort reads based on position for deduping
-#    samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
-#done
-#
-## Merge BAMs if multiple BAMs were generated
-#samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/merge.out
-#
-#ls -lht "/data/scratch/polar-bear-fda-eua/aligned" > data/logs/check_aligned.txt
+for i in ${read1}
+do
+    ext=${i#*$READ1_STR}
+    name=${i%$READ1_STR*}
+    name1=${name}${READ1_STR}
+    name2=${name}${READ2_STR}
+    read1files+=($name1$ext)
+    read2files+=($name2$ext)
+done
+
+####### First block of work: Alignment of reads to reference
+echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
+
+for ((i = 0; i < ${#read1files[@]}; ++i)); do
+    file1=${read1files[$i]}
+    file2=${read2files[$i]}
+
+    FILE=$(basename ${file1%$read1str})
+    ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
+
+    # Align reads to viral reference
+    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+
+    # Samtools fixmate fills in mate coordinates and insert size fields for deduping
+    # Samtools fixmate is also converting SAM to BAM
+    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
+
+    # Sort reads based on position for deduping
+    samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
+done
+
+# Merge BAMs if multiple BAMs were generated
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/merge.out
+
+ls "/data/scratch/polar-bear-fda-eua/aligned" > data/logs/check_aligned.txt
 
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
