@@ -157,7 +157,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 done
 
 # Merge BAMs if multiple BAMs were generated
-samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> data/logs/marge_out.txt
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.txt
 
 ####### Second block of work: Seperate viral data from control data
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
@@ -199,23 +199,22 @@ samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> 
 echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
-ls ${WORK_DIR}/aligned/* > data/logs/check_5.txt
 
 ## Write results to a file
 #echo "ʕ·ᴥ·ʔ : Compiling results"
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
-if  [ "$APP_MODE" = 1 ]
-then
+#if  [ "$APP_MODE" = 1 ]
+#then
 
-  cp ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/
+#  cp ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/
 #  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
 #  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
 #
 #  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 #  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 #
-  cp ${WORK_DIR}/debug/* data/logs/ 
+#  cp ${WORK_DIR}/debug/* data/logs/
 
-fi
+#fi
