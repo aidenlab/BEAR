@@ -206,11 +206,10 @@ ls ${WORK_DIR}/aligned/* > data/logs/check_5.txt
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
-#if  [ "$APP_MODE" = 1 ]
-#then
-#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/
-#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
-#  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+if  [ "$APP_MODE" = 1 ]
+then
+
+  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/aligned/
 #  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
 #  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
 #
@@ -218,5 +217,5 @@ ls ${WORK_DIR}/aligned/* > data/logs/check_5.txt
 #  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 #
 #  mv ${WORK_DIR}/debug/* data/logs/
-#
-#fi
+
+fi
