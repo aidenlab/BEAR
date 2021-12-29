@@ -152,7 +152,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
     # Sort reads based on position for deduping
-    samtools sort -@ $THREADS -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
+    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam"
 done
 
 # Merge BAMs if multiple BAMs were generated
