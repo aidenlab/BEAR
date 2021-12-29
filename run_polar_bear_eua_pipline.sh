@@ -158,9 +158,10 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 done
 
 # Merge BAMs if multiple BAMs were generated
-samtools merge ${WORK_DIR}"/aligned/sorted_merged.sam" ${WORK_DIR}"/aligned/*_matefixd_sorted.sam" 2> ${WORK_DIR}/debug/merge.out
+samtools merge ${WORK_DIR}"/aligned/sorted_merged.sam" ${WORK_DIR}"/aligned/*_matefixd_sorted.sam" 2> data/logs/marge_out.txt
 
-ls "${WORK_DIR}/aligned/" > data/logs/sanity_check_02.txt
+ls ${WORK_DIR}"/aligned/*_matefixd_sorted.sam" > data/logs/sanity_check_03.txt
+#ls "${WORK_DIR}/aligned/" > data/logs/sanity_check_03.txt
 
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
@@ -207,8 +208,8 @@ ls "${WORK_DIR}/aligned/" > data/logs/sanity_check_02.txt
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
 #
-if  [ "$APP_MODE" = 1 ]
-then
+#if  [ "$APP_MODE" = 1 ]
+#then
 #  mkdir "${basespace_output_path_for_sample}/alignments/"
 #  mv "${WORK_DIR}/aligned/sorted_merged-good.bam" "${basespace_output_path_for_sample}/alignments/"
 #  mv "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${basespace_output_path_for_sample}/alignments/"
@@ -217,6 +218,6 @@ then
 #  mkdir "${basespace_output_path_for_sample}/results/"
 #  mv "${WORK_DIR}/final/*" "${basespace_output_path_for_sample}/results/"
 
-  mv ${WORK_DIR}"/debug/*" data/logs/
+#  mv ${WORK_DIR}"/debug/*" data/logs/
 
-fi
+#fi
