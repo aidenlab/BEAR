@@ -61,7 +61,7 @@ def create_file_trigger_for_bear_pipeline(bearOutDir):
 
 def create_file(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
-    os.system('mkdir -p "%s"' % (sampleOutDir))
+    os.system('mkdir -p "%s"' %(bearOutDir))
     file_name = bearOutDir + '/test.txt'
     parameterFile = open(file_name ,'w')
     parameterFile.write(bearOutDir)
