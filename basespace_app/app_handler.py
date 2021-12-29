@@ -81,7 +81,6 @@ def run_polar_bear():
 if __name__ == "__main__":
     jsonAppObject = load_appsession_json()
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
-    create_file(bearOutDir)
-    # create_file_trigger_for_bear_pipeline(bearOutDir)
-    # run_polar_bear()
+    create_file_trigger_for_bear_pipeline(bearOutDir)
+    run_polar_bear()
 
