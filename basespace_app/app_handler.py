@@ -59,13 +59,10 @@ def create_file_trigger_for_bear_pipeline(bearOutDir):
     parameterFile.write(bearOutDir)
     parameterFile.close()
 
-def create_file(bearOutDir):
+def create_output_folder(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
     os.system('mkdir -p "%s"' %(bearOutDir))
-    file_name = bearOutDir + '/test.txt'
-    parameterFile = open(file_name ,'w')
-    parameterFile.write(bearOutDir)
-    parameterFile.close()
+
 
 def run_polar_bear():
     # create & open log file for bear pipeline
@@ -82,9 +79,9 @@ def run_polar_bear():
 if __name__ == "__main__":
     jsonAppObject = load_appsession_json()
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
-    create_file(bearOutDir)
-    # create_file_trigger_for_bear_pipeline(bearOutDir)
-    # run_polar_bear()
+    create_file_trigger_for_bear_pipeline(bearOutDir)
+    create_output_folder(bearOutDir)
+    run_polar_bear()
 
 
 #
