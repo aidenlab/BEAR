@@ -212,6 +212,7 @@ then
 #  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 #  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 
+  cp ${WORK_DIR}/aligned/ampliconCoverage.txt data/logs/ampliconCoverage.txt
   cp ${WORK_DIR}/debug/* data/logs/
 
 fi
