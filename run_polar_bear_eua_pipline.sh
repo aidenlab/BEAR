@@ -153,7 +153,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
     # Sort reads based on position for deduping
-    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/merge.out
+    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
 
 done
 
@@ -207,13 +207,14 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 if  [ "$APP_MODE" = 1 ]
 then
-  mkdir ${basespace_output_path_for_sample}/alignments/
-  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/alignments/
-  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/alignments/
-  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/alignments/
+  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/
+  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
 
-  mkdir ${basespace_output_path_for_sample}/results/
-  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/results/
+  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
+  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
 
   mv ${WORK_DIR}/debug/* data/logs/
 
