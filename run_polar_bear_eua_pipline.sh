@@ -200,21 +200,21 @@ samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> 
 echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
-# Write results to a file
-echo "ʕ·ᴥ·ʔ : Compiling results"
-"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
-echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for diagnositc result"
+## Write results to a file
+#echo "ʕ·ᴥ·ʔ : Compiling results"
+#"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
+#echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
 if  [ "$APP_MODE" = 1 ]
 then
-  mkdir ${basespace_output_path_for_sample}"/alignments/"
-  mv ${WORK_DIR}"/aligned/sorted_merged-good.bam" ${basespace_output_path_for_sample}"/alignments/"
-  mv ${WORK_DIR}"/aligned/sorted_merged-IS.bam" ${basespace_output_path_for_sample}"/alignments/"
-  mv ${WORK_DIR}"/aligned/sorted_merged-bad.bam" ${basespace_output_path_for_sample}"/alignments/"
+  mkdir ${basespace_output_path_for_sample}/alignments/
+  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/alignments/
+  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/alignments/
+  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/alignments/
 
-  mkdir ${basespace_output_path_for_sample}"/results/"
-  mv ${WORK_DIR}"/final/*" ${basespace_output_path_for_sample}"/results/"
+  mkdir ${basespace_output_path_for_sample}/results/
+  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/results/
 
-  mv ${WORK_DIR}"/debug/*" data/logs/
+  mv ${WORK_DIR}/debug/* data/logs/
 
 fi
