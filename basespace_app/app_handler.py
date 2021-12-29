@@ -59,6 +59,13 @@ def create_file_trigger_for_bear_pipeline(bearOutDir):
     parameterFile.write(bearOutDir)
     parameterFile.close()
 
+def create_file(bearOutDir):
+    # create "parameters.csv" file in output folder for BEAR
+    file_name = bearOutDir + '/test.txt'
+    parameterFile = open(file_name ,'w')
+    parameterFile.write(bearOutDir)
+    parameterFile.close()
+
 def run_polar_bear():
     # create & open log file for bear pipeline
     bear_pipeline_log = open('data/logs/polar_bear_eua_pipline_log.txt', 'w')
@@ -74,6 +81,7 @@ def run_polar_bear():
 if __name__ == "__main__":
     jsonAppObject = load_appsession_json()
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
-    create_file_trigger_for_bear_pipeline(bearOutDir)
-    run_polar_bear()
+    create_file(bearOutDir)
+    # create_file_trigger_for_bear_pipeline(bearOutDir)
+    # run_polar_bear()
 
