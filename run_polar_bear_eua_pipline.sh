@@ -205,13 +205,13 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
-if  [ "$APP_MODE" = 1 ]
-then
-  cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/
+#if  [ "$APP_MODE" = 1 ]
+#then
+#  cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/
+##
+##  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
+##  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
+##
+##  cp ${WORK_DIR}/debug/* data/logs/
 #
-#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
-#  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
-#
-#  cp ${WORK_DIR}/debug/* data/logs/
-
-fi
+#fi
