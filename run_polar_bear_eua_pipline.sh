@@ -147,18 +147,20 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     # Align reads to viral reference
     bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
 
+    mv
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
     # Sort reads based on position for deduping
     samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/merge.out
+
 done
 
-# Merge BAMs if multiple BAMs were generated
-samtools merge "${WORK_DIR}/aligned/sorted_merged.sam" "${WORK_DIR}/aligned/*_matefixd_sorted.sam" 2> ${WORK_DIR}/debug/merge.out
+mv "data/scratch/polar-bear-fda-eua/aligned/subsample_R1.fastq_mapped.sam" data/logs/
 
-ls "${WORK_DIR}/aligned/" > data/logs/check_me.txt
+# Merge BAMs if multiple BAMs were generated
+#samtools merge "${WORK_DIR}/aligned/sorted_merged.sam" "${WORK_DIR}/aligned/*_matefixd_sorted.sam" 2> ${WORK_DIR}/debug/merge.out
 
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
