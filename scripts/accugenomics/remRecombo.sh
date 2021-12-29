@@ -237,19 +237,18 @@ if [ $6 != 0 ];then #were split files created?
 			samtools fastq --verbosity 3 -1 "${pi}/${fn}-CC-R1.fastq.gz" -2 "${pi}/${fn}-CC-R2.fastq.gz" "${pi}/${fn}-rsort.temp" &>/dev/null
 		fi
 	else
-
-	 #    if [ -f "${pi}/${fn}-good.bam" ];then
-		# samtools fastq -0 "${pi}/${fn}-NT-R1.fastq.gz" "${pi}/${fn}-good.bam"
-	 #    fi
-	 #    if [ -f "${pi}/${fn}-IS.bam" ];then
-		# samtools fastq -0 "${pi}/${fn}-IS-R1.fastq.gz" "${pi}/${fn}-IS.bam"
-	 #    fi
-	 #    if [ -f "${pi}/${fn}-bad.bam" ];then
-		# samtools fastq -0 "${pi}/${fn}-bad-R1.fastq.gz" "${pi}/${fn}-bad.bam"
-		# fi
-		# if [ -f "${pi}/${fn}-CC.bam" ];then
-		# samtools fastq -0 "${pi}/${fn}-CC-R1.fastq.gz" "${pi}/${fn}-CC.bam"
-		# fi
+	     if [ -f "${pi}/${fn}-good.bam" ];then
+		 samtools fastq -0 "${pi}/${fn}-NT-R1.fastq.gz" "${pi}/${fn}-good.bam"
+	     fi
+	     if [ -f "${pi}/${fn}-IS.bam" ];then
+		 samtools fastq -0 "${pi}/${fn}-IS-R1.fastq.gz" "${pi}/${fn}-IS.bam"
+	     fi
+	     if [ -f "${pi}/${fn}-bad.bam" ];then
+		 samtools fastq -0 "${pi}/${fn}-bad-R1.fastq.gz" "${pi}/${fn}-bad.bam"
+		 fi
+		 if [ -f "${pi}/${fn}-CC.bam" ];then
+		 samtools fastq -0 "${pi}/${fn}-CC-R1.fastq.gz" "${pi}/${fn}-CC.bam"
+		 fi
 	fi
 	
 	echo "Removing scratch files..."
