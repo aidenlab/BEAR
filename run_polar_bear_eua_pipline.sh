@@ -147,7 +147,6 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     # Align reads to viral reference
     bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
 
-    mv
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
@@ -200,22 +199,23 @@ samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> 
 echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
+ls ${WORK_DIR}/aligned/* > data/logs/check_5.txt
 ## Write results to a file
 #echo "ʕ·ᴥ·ʔ : Compiling results"
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
-if  [ "$APP_MODE" = 1 ]
-then
-  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/
-  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
-  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
-  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
-  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
-
-  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
-  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
-
-  mv ${WORK_DIR}/debug/* data/logs/
-
-fi
+#if  [ "$APP_MODE" = 1 ]
+#then
+#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/
+#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+#  mv ${WORK_DIR}/aligned/sorted_merged-good.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+#  mv ${WORK_DIR}/aligned/sorted_merged-IS.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+#  mv ${WORK_DIR}/aligned/sorted_merged-bad.bam ${basespace_output_path_for_sample}/polar-bear-fda-eua/aligned/
+#
+#  mkdir ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
+#  mv ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/polar-bear-fda-eua/results/
+#
+#  mv ${WORK_DIR}/debug/* data/logs/
+#
+#fi
