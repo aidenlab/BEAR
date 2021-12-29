@@ -158,10 +158,9 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 done
 
 # Merge BAMs if multiple BAMs were generated
-samtools merge ${WORK_DIR}"/aligned/sorted_merged.sam" ${WORK_DIR}"/aligned/*_matefixd_sorted.sam" 2> data/logs/marge_out.txt
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> data/logs/marge_out.txt
 
-ls ${WORK_DIR}"/aligned/*_matefixd_sorted.sam" > data/logs/sanity_check_03.txt
-#ls "${WORK_DIR}/aligned/" > data/logs/sanity_check_03.txt
+ls "${WORK_DIR}/aligned/" > data/logs/sanity_check_04.txt
 
 ######## Second block of work: Seperate viral data from control data
 #echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
