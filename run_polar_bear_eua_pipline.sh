@@ -206,7 +206,7 @@ echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
 if  [ "$APP_MODE" = 1 ]
 then
-  zip ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
+  zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
 
   mv ${WORK_DIR}/final/result.csv ${basespace_output_path_for_sample}
 
