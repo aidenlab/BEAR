@@ -2,30 +2,57 @@
     "$type": "Form",
     "fields": [
         {
-            "$type": "ProjectChooser",
-            "size": 250,
-            "valueType": "Output",
-            "allowedPermissions": "owner",
-            "label": "Output Project",
+            "$type": "TextBox",
+            "size": 400,
+            "minLength": 0,
+            "maxLength": 150,
+            "value": "Example [LocalDateTime]",
+            "label": "Analysis Name",
             "required": true,
-            "requiredMessage": "Please choose a project",
-            "id": "project-id"
+            "requiredMessage": "Please enter name for your analysis session!",
+            "id": "app-session-name"
         },
-        {
-            "$type": "SectionBreak",
-            "title": "Input"
-        },
-
         {
             "$type": "SampleChooser",
             "size": 300,
+            "valueType": "Input",
             "allowedPermissions": "read",
-            "multiselect": false,
-            "label": "Input Sample",
+            "label": "Sample",
             "required": true,
-            "requiredMessage": "Please choose a sample",
-            "id": "sample-id"
+            "id": "sample-id",
+            "requiredMessage": "Please choose a sample to analyze!",
+            "rules": "sample-reader"
+        },
+        {
+            "$type": "ProjectChooser",
+            "size": 300,
+            "valueType": "Output",
+            "allowedPermissions": "owner",
+            "label": "Save Results To",
+            "required": true,
+            "requiredMessage": "Please choose a project to save analysis result to!",
+            "id": "project-id",
+            "allowResourceCreation": true,
+            "rules": "is-project-owner"
+        },
+        {
+            "$type": "SectionBreak"
         }
     ],
-    "id": "form-container"
+    "rulesets":[
+        {
+            "$type": "PermissionValidationRule",
+            "permissions": "Read",
+            "severity": "Error",
+            "message": "You do not have read access to the selected sample",
+            "id": "sample-reader"
+        },
+        {
+            "$type": "PermissionValidationRule",
+            "permissions": "Own",
+            "severity": "Error",
+            "message": "You aren't the owner of the selected project.",
+            "id": "is-project-owner"
+        }
+    ]
 }
