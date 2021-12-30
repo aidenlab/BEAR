@@ -206,14 +206,14 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 if  [ "$APP_MODE" = 1 ]
 then
-  ls ${WORK_DIR}/aligned/* data/logs/sanity_check.txt
-  
-  mkdir ${basespace_output_path_for_sample}/aligned/
-  cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/aligned/
+  ls ${WORK_DIR}/aligned/ data/logs/sanity_check.txt
 
-  mkdir ${basespace_output_path_for_sample}/results
-  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/results/
-
-  cp ${WORK_DIR}/debug/* data/logs/
+#  mkdir ${basespace_output_path_for_sample}/aligned/
+#  cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/aligned/
+#
+#  mkdir ${basespace_output_path_for_sample}/results
+#  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/results/
+#
+#  cp ${WORK_DIR}/debug/* data/logs/
 
 fi
