@@ -82,7 +82,6 @@ echo "ʕ·ᴥ·ʔ : Checking dependencies..."
 
 command -v bwa >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : BWA required but it's not installed!"; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Samtools required but it's not installed!"; exit 1; }
-command -v bedtools >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Bedtools required but it's not installed!"; exit 1; }
 command -v "${PYTHON}" >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Python required but it's not installed!"; exit 1; }
 
 # Check for data (FASTQ) files
@@ -207,6 +206,8 @@ samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WO
 
 if  [ "$APP_MODE" = 1 ]
 then
+  ls ${WORK_DIR}/aligned/* data/logs/sanity_check.txt
+  
   mkdir ${basespace_output_path_for_sample}/aligned/
   cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/aligned/
 
