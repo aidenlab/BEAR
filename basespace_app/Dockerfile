@@ -16,7 +16,9 @@ RUN apt-get update && \
 	libbz2-dev \
 	liblzma-dev \
 	libcurl3-dev \
+	gawk \
 	unzip \
+	zip \
 	make \
 	git \
     gcc && \
@@ -40,27 +42,21 @@ RUN mkdir /usr/bwa && \
 # install Samtools
 RUN mkdir /usr/samtools && \
     cd /usr/samtools && \
-    wget https://github.com/samtools/samtools/releases/download/1.14/samtools-1.14.tar.bz2 && \
-    tar xvf samtools-1.14.tar.bz2 && \
-    cd samtools-1.14 && \
+    wget https://github.com/samtools/samtools/releases/download/1.12/samtools-1.12.tar.bz2 && \
+    tar xvf samtools-1.12.tar.bz2 && \
+    cd samtools-1.12 && \
     ./configure --without-curses --disable-lzma --disable-bz2 --prefix=/usr/local/bin && \
     make && \
     make install && \
     ln -s $PWD/samtools /usr/local/bin/
 
-# install bedtools
-RUN mkdir /usr/bedtools && \
-    cd /usr/bedtools && \
-    wget -O bedtools https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools.static.binary && \
-	chmod a+x bedtools && \
-	ln -s $PWD/bedtools /usr/local/bin/
-
 # clone POLAR BEAR repo and clean up
 RUN git clone -b eua https://github.com/aidenlab/POLAR-BEAR && \
     cd POLAR-BEAR && \
-    git checkout 023572ce5ca363183b0d150e9a3158d5904babc3 && \
+    git checkout ee99a141c34733ccfb7929880dd4c961a23b01fe && \
     rm -r assets README.md polar_eua_conda_env.yml prepare_polar_eua_conda_env.sh
 
 # install python requirements
 RUN pip3 install -r POLAR-BEAR/basespace_app/requirements.txt && rm POLAR-BEAR/basespace_app/requirements.txt
+
 
