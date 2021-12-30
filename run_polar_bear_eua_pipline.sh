@@ -199,21 +199,17 @@ echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignmen
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
 
-## Write results to a file
-#echo "ʕ·ᴥ·ʔ : Compiling results"
-#"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
-#echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
+# Write results to a file
+echo "ʕ·ᴥ·ʔ : Compiling results"
+"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
+echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
 if  [ "$APP_MODE" = 1 ]
 then
-  ls ${WORK_DIR}/aligned/ data/logs/sanity_check.txt
+  zip ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
 
-#  mkdir ${basespace_output_path_for_sample}/aligned/
-#  cp ${WORK_DIR}/aligned/* ${basespace_output_path_for_sample}/aligned/
-#
-#  mkdir ${basespace_output_path_for_sample}/results
-#  cp ${WORK_DIR}/final/* ${basespace_output_path_for_sample}/results/
-#
-#  cp ${WORK_DIR}/debug/* data/logs/
+  mv ${WORK_DIR}/final/result.csv ${basespace_output_path_for_sample}
+
+  cp ${WORK_DIR}/debug/* data/logs/
 
 fi
