@@ -53,7 +53,7 @@ RUN mkdir /usr/samtools && \
 # clone POLAR BEAR repo and clean up
 RUN git clone -b eua https://github.com/aidenlab/POLAR-BEAR && \
     cd POLAR-BEAR && \
-    git checkout ee99a141c34733ccfb7929880dd4c961a23b01fe && \
+    git checkout 861bf9f3ec05cc1b5c78b9f31edb752e1e0965bb && \
     rm -r assets README.md polar_eua_conda_env.yml prepare_polar_eua_conda_env.sh
 
 # install python requirements
