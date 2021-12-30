@@ -1,6 +1,6 @@
 {
-    "$type": "Form",
-    "fields": [
+        "$type": "Form",
+        "fields": [
         {
             "$type": "TextBox",
             "size": 400,
@@ -12,6 +12,20 @@
             "requiredMessage": "Please enter name for your analysis session!",
             "id": "app-session-name"
         },
+        {
+    "$type": "Select",
+	"id": "select-1",
+	"label": "Target Pathogenl",
+	"multiselect": false,
+	"choices": [
+		{
+			"value": 0,
+			"text": "Sars-CoV-2",
+			"selected": true
+		}
+	]
+},
+
         {
             "$type": "SampleChooser",
             "size": 300,
