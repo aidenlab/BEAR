@@ -27,9 +27,9 @@ def determine_diagnostic_result(breadth_of_coverage, control_count, reads):
     if float(breadth_of_coverage) >= 5:
         clinical_result_var = "Positive"
     elif int(control_count) < 20000:
-        clinical_result_var = "Inconclusive, control not adequately present in sample"
+        clinical_result_var = "Inconclusive (control not adequately present in sample)"
     elif reads < 150000:
-        clinical_result_var = "Inconclusive, read depth of sample not sufficient for analysis"
+        clinical_result_var = "Inconclusive (read depth of sample not sufficient for analysis)"
     else:
         clinical_result_var = "Negative"
     return clinical_result_var
@@ -50,9 +50,11 @@ def write_stats_file(path_to_qc_result, library_name, total_reads_var, mapped_re
     qc_file.close()
 
 def write_result_file(path_to_clinical_result, library_name, clinical_result_var):
-    clinical_result_to_write = str(library_name) + "result is:" + str(clinical_result_var)
+    result_header = "sample,result\n"
+    clinical_result_to_write = str(library_name) + "," + str(clinical_result_var)
 
     with open(path_to_clinical_result, 'w') as clinical_file:
+        clinical_file.write(result_header)
         clinical_file.write(clinical_result_to_write)
     clinical_file.close()
 
