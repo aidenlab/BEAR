@@ -68,7 +68,8 @@ def run_polar_bear(sample_fastq_directory):
 
     # run bear command
     bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", sample_fastq_directory]
-    bear_out = subprocess.call(bear_command, stdout=bear_pipeline_log)
+    # subprocess.call(bear_command, stdout=bear_pipeline_log)
+    subprocess.call(bear_command)
 
     # close log file for bear pipeline
     bear_pipeline_log.close()
@@ -80,8 +81,5 @@ if __name__ == "__main__":
     create_file_trigger_for_bear_pipeline(bearOutDir)
     create_output_folder(bearOutDir)
     run_polar_bear(sampleDir)
-
-
-#
 
 
