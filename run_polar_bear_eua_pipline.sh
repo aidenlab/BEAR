@@ -33,8 +33,10 @@ then
   APP_MODE=1
   basespace_output_path_for_sample=$(awk 'NR==1 {print; exit}' POLAR-BEAR/native.app.txt)
   PYTHON=python3
+  FASTQ_DIR=${TOP_DIR}"/*_R*.fastq*"
 else
   PYTHON=python
+  FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 fi
 
 ### Threads
@@ -86,7 +88,6 @@ command -v "${PYTHON}" >/dev/null 2>&1 || { echo >&2 "ʕ·ᴥ·ʔ : Python requi
 
 # Check for data (FASTQ) files
 # We assume the files exist in a "fastq" directory
-FASTQ_DIR=${TOP_DIR}"/fastq/*_R*.fastq*"
 READ1_STR="R1"
 READ2_STR="R2"
 
