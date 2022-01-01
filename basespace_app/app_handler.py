@@ -67,7 +67,7 @@ def run_polar_bear(sample_fastq_directory):
     bear_pipeline_log = open('data/logs/polar_bear_eua_pipline_log.txt', 'w')
 
     # run bear command
-    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", "test"]
+    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", sample_fastq_directory]
     subprocess.call(bear_command, stdout=bear_pipeline_log)
 
     # close log file for bear pipeline
