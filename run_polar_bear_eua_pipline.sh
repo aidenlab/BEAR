@@ -155,8 +155,9 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
 
     # Align reads to viral reference
-#    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
-    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> data/logs/align.out
+    # bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+    echo $file1 $file2
+    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam"
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
