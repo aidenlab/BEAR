@@ -201,7 +201,6 @@ print length(NTc1) "\t" length(ISc1) "\t" length(CCc1) "\t" length(NTc2) "\t" le
 }' "$1" "${pi}/${fn}.${fe}" "${pi}/${fn}.${fe}" 
 
 if [ $6 != 0 ];then #were split files created?
-	echo "Creating BAM..."
 	samtools view -b1h  "${goodFile}" -o "${pi}/${fn}-good.bam"
 	samtools index "${pi}/${fn}-good.bam"
 	rm -f "${goodFile}"
@@ -217,8 +216,7 @@ if [ $6 != 0 ];then #were split files created?
 	samtools  view -b1h "${pi}/${fn}-ukn.sam" -o "${pi}/${fn}-ukn.bam"
 	samtools index "${pi}/${fn}-ukn.bam"
 	rm -f "${pi}/${fn}-ukn.sam"
-	
-	echo "Creating fastq..."
+
 	if [[ $5 == 1 ]];then
 		if [ -f "${pi}/${fn}-good.bam" ];then	
 			samtools sort -n "${pi}/${fn}-good.bam" -o "${pi}/${fn}-rsort.temp" -O bam -@ 32 -m 1G >/dev/null 2>&1
@@ -250,8 +248,7 @@ if [ $6 != 0 ];then #were split files created?
 #		 samtools fastq -0 "${pi}/${fn}-CC-R1.fastq.gz" "${pi}/${fn}-CC.bam"
 #		 fi
 	fi
-	
-	echo "Removing scratch files..."
+
 	#rm -f "${pi}/${fn}-IS.sam"
 	#rm -f "${pi}/${fn}-good.sam"
 	#rm -f "${pi}/${fn}-bad.sam"
