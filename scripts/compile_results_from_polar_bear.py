@@ -10,7 +10,10 @@ def return_breadth_of_coverage(viral_depth_per_base):
                                  dtype={'RF': 'object', 'B': 'int64', 'CV': 'int64'})
     total_num_of_bases = depth_per_base.loc[depth_per_base.CV >= 0, 'CV'].count()
     base_with_at_lest_5x_cov = depth_per_base.loc[depth_per_base.CV >= 5, 'CV'].count()
-    breadth_of_coverage = str(round((100 * base_with_at_lest_5x_cov / total_num_of_bases), 1))
+    if total_num_of_bases == 0:
+        breadth_of_coverage = 0
+    else:
+        breadth_of_coverage = str(round((100 * base_with_at_lest_5x_cov / total_num_of_bases), 1))
     return breadth_of_coverage
 
 def return_number_of_mapped_reads(number_of_mapped_reads, number_of_reads):
@@ -19,7 +22,10 @@ def return_number_of_mapped_reads(number_of_mapped_reads, number_of_reads):
     return mapped_reads_var
 
 def return_viral_read_dup(number_of_viral_duplicates, number_of_viral_reads):
-    viral_dup_percentage = round((int(number_of_viral_duplicates) * 100 / int(number_of_viral_reads)), 1)
+    if number_of_viral_reads == 0:
+        viral_dup_percentage = 0
+    else:
+        viral_dup_percentage = round((int(number_of_viral_duplicates) * 100 / int(number_of_viral_reads)), 1)
     viral_read_dup = str(format_number_w_commads(number_of_viral_duplicates)) + str(' (') + str(viral_dup_percentage) + str('%)')
     return viral_read_dup
 
