@@ -27,7 +27,7 @@ RUN apt-get update && \
     apt-get purge && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# set the default langage to C
+# set the default language to C
 ENV LC_ALL C
 
 # install BWA
