@@ -144,8 +144,10 @@ do
     read2files+=($name2$ext)
 done
 
-echo read1files
-ls read1files
+
+echo $read1files
+ls $TOP_DIR
+
 ######## First block of work: Alignment of reads to reference
 #echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
 #
