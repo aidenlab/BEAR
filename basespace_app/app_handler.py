@@ -3,8 +3,8 @@ import subprocess
 import json
 
 # load json file
-## define JSON format of the "AppSession.json" for the app session
 def metadatajson():
+    # define JSON format of the "AppSession.json" for the app session
     json_file = json.dumps(
         {
             "Name"          : "",
@@ -52,7 +52,6 @@ def get_app_data_from_json(jsonObject):
 
     return sampleDir, projectID, bearOutDir
 
-
 def create_file_trigger_for_bear_pipeline(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
     parameterFile = open("POLAR-BEAR/native.app.txt" ,'w')
@@ -63,13 +62,12 @@ def create_output_folder(bearOutDir):
     # create "parameters.csv" file in output folder for BEAR
     os.system('mkdir -p "%s"' %(bearOutDir))
 
-
-def run_polar_bear():
+def run_polar_bear(sample_fastq_directory):
     # create & open log file for bear pipeline
     bear_pipeline_log = open('data/logs/polar_bear_eua_pipline_log.txt', 'w')
 
     # run bear command
-    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", "POLAR-BEAR/test"]
+    bear_command = ["bash", "POLAR-BEAR/run_polar_bear_eua_pipline.sh", "-d", sample_fastq_directory]
     bear_out = subprocess.call(bear_command, stdout=bear_pipeline_log)
 
     # close log file for bear pipeline
@@ -81,7 +79,7 @@ if __name__ == "__main__":
     sampleDir, projectID, bearOutDir = get_app_data_from_json(jsonAppObject)
     create_file_trigger_for_bear_pipeline(bearOutDir)
     create_output_folder(bearOutDir)
-    run_polar_bear()
+    run_polar_bear(sampleDir)
 
 
 #
