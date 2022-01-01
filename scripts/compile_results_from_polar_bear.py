@@ -23,15 +23,15 @@ def return_viral_read_dup(number_of_viral_duplicates, number_of_viral_reads):
     viral_read_dup = str(format_number_w_commads(number_of_viral_duplicates)) + str(' (') + str(viral_dup_percentage) + str('%)')
     return viral_read_dup
 
-def determine_diagnostic_result(breadth_of_coverage, control_count, reads):
+def determine_diagnostic_result(breadth_of_coverage, control_count, read_length, reads):
     if float(breadth_of_coverage) >= 5:
-        clinical_result_var = "Positive"
+        clinical_result_var = "positive"
+    elif reads < 150000 or read_length < 90:
+        clinical_result_var = "Inconclusive (read depth/length of sample not sufficient for analysis)"
     elif int(control_count) < 20000:
         clinical_result_var = "Inconclusive (control not adequately present in sample)"
-    elif reads < 150000:
-        clinical_result_var = "Inconclusive (read depth of sample not sufficient for analysis)"
     else:
-        clinical_result_var = "Negative"
+        clinical_result_var = "negative"
     return clinical_result_var
 
 def write_stats_file(path_to_qc_result, library_name, total_reads_var, mapped_reads_var, breadth_of_coverage_var, dup_reads_var, insert_var, insert_dev_var):
@@ -79,10 +79,11 @@ def return_data_from_all_align_stats(all_align_stats_file_path):
     mapped_reads_count = []
     with open(all_align_stats_file_path) as all_stat_file:
         for line in all_stat_file:
-            if 'mapped (' in line:
-                mapped_reads_count = float(line.split()[0])
-            if 'paired in sequencing' in line:
-                reads = int(line.split()[0])/2
+            if not "SN" in line:
+                if 'mapped (' in line:
+                    mapped_reads_count = float(line.split()[0])
+                if 'paired in sequencing' in line:
+                    reads = int(line.split()[0])/2
 
     return mapped_reads_count, reads
 
