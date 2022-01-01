@@ -144,32 +144,28 @@ do
     read2files+=($name2$ext)
 done
 
+####### First block of work: Alignment of reads to reference
+echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
 
-echo $read1files
-ls $TOP_DIR
+for ((i = 0; i < ${#read1files[@]}; ++i)); do
+    file1=${read1files[$i]}
+    file2=${read2files[$i]}
 
-######## First block of work: Alignment of reads to reference
-#echo "ʕ·ᴥ·ʔ : Aligning files matching $FASTQ_DIR to $PATHOGEN_NAME reference assembly"
-#
-#for ((i = 0; i < ${#read1files[@]}; ++i)); do
-#    file1=${read1files[$i]}
-#    file2=${read2files[$i]}
-#
-#    FILE=$(basename ${file1%$read1str})
-#    ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
-#
-#    # Align reads to viral reference
-#    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
-#
+    FILE=$(basename ${file1%$read1str})
+    ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
+
+    # Align reads to viral reference
+    bwa -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+
 #    # Samtools fixmate fills in mate coordinates and insert size fields for deduping
 #    # Samtools fixmate is also converting SAM to BAM
 #    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 #
 #    # Sort reads based on position for deduping
 #    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
-#
-#done
-#
+
+done
+
 ## Merge BAMs if multiple BAMs were generated
 #samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.txt
 #
@@ -222,12 +218,12 @@ ls $TOP_DIR
 #"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
 #echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 #
-#if  [ "$APP_MODE" = 1 ]
-#then
-#  zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
-#
-#  mv ${WORK_DIR}/final/result.csv ${basespace_output_path_for_sample}
-#
-#  cp ${WORK_DIR}/debug/* data/logs/
-#
-#fi
+if  [ "$APP_MODE" = 1 ]
+then
+  zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
+
+  mv ${WORK_DIR}/final/result.csv ${basespace_output_path_for_sample}
+
+  cp ${WORK_DIR}/debug/* data/logs/
+
+fi
