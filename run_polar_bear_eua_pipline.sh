@@ -192,13 +192,13 @@ samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_m
 echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
 
-echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/all_alignment_stats.txt
+echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/all_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
 
 echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
-echo "ʕ·ᴥ·ʔ : samtools stats result " > ${WORK_DIR}/aligned/viral_alignment_stats.txt
+echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
 
 
