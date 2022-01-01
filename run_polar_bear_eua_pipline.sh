@@ -155,9 +155,8 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
 
     # Align reads to viral reference
-    # bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
-    echo $file1 $file2
-    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam"
+    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
     samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
@@ -167,58 +166,58 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 
 done
 
-## Merge BAMs if multiple BAMs were generated
-#samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.txt
-#
-######## Second block of work: Seperate viral data from control data
-#echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
-#
-#"${REMRECOMBO}" "${NT_TO_IS}" "${WORK_DIR}/aligned/sorted_merged.sam" "${QCUTOFF}" "${GOODBASECHANGE}" "${PE}" "${SEQSPLIT}" 2> ${WORK_DIR}/debug/recombo.out
-#
-#for SAM in ${WORK_DIR}/aligned/*sam;
-#do
-#    samtools view -hb $SAM > ${SAM%.sam}".bam"
-#    rm $SAM
-#done
-#
-## Get coverage of viral reference from read catagories
-#echo "ʕ·ᴥ·ʔ : Analyzing Coverage..."
-#
-#samtools index "${WORK_DIR}/aligned/sorted_merged-good.bam"
-#samtools index "${WORK_DIR}/aligned/sorted_merged-IS.bam"
-#samtools index "${WORK_DIR}/aligned/sorted_merged-bad.bam"
-#echo $'virus\taccukit\tchimeras'  > ${WORK_DIR}/aligned/ampliconCoverage.txt
-#samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
-#samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/ { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
-#samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
-#
-## Mark dups
-#samtools markdup "${WORK_DIR}/aligned/sorted_merged-good.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" 2> ${WORK_DIR}/debug/good_dedup.out
-#samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_IS.bam" 2> ${WORK_DIR}/debug/IS_dedup.out
-#
-## Get BoC
-## To avoid cross-reaction with SARS a few regions are excluded from analysis
-#samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" | awk '$1=="MN908947.3"' > ${WORK_DIR}/aligned/viral_depth_per_base.txt 2> ${WORK_DIR}/debug/viral_depth.out
-#
-## Gather alignment qc statistics
-#echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt
-#samtools flagstat "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
-#
-#echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/all_alignment_stats.txt
-#samtools stats "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
-#
-#echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/viral_alignment_stats.txt
-#samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
-#
-#echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
-#samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
-#
-#
-## Write results to a file
-#echo "ʕ·ᴥ·ʔ : Compiling results"
-#"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
-#echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
-#
+# Merge BAMs if multiple BAMs were generated
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.txt
+
+####### Second block of work: Seperate viral data from control data
+echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
+
+"${REMRECOMBO}" "${NT_TO_IS}" "${WORK_DIR}/aligned/sorted_merged.sam" "${QCUTOFF}" "${GOODBASECHANGE}" "${PE}" "${SEQSPLIT}" 2> ${WORK_DIR}/debug/recombo.out
+
+for SAM in ${WORK_DIR}/aligned/*sam;
+do
+    samtools view -hb $SAM > ${SAM%.sam}".bam"
+    rm $SAM
+done
+
+# Get coverage of viral reference from read catagories
+echo "ʕ·ᴥ·ʔ : Analyzing Coverage..."
+
+samtools index "${WORK_DIR}/aligned/sorted_merged-good.bam"
+samtools index "${WORK_DIR}/aligned/sorted_merged-IS.bam"
+samtools index "${WORK_DIR}/aligned/sorted_merged-bad.bam"
+echo $'virus\taccukit\tchimeras'  > ${WORK_DIR}/aligned/ampliconCoverage.txt
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-good.bam" | awk '$1=="MN908947.3" { ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-IS.bam" | awk '$1 ~ /-SNAQ$/ { ar=int($9/($3-$2)); nt+=ar }END{printf ("%i\t",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
+samtools bedcov -Q 4 "$AMPLICONS" "${WORK_DIR}/aligned/sorted_merged-bad.bam" | awk '{ ar=int($9/($3-$2)); nt+=ar}END{printf ("%i\n",  nt)}' >> ${WORK_DIR}/aligned/ampliconCoverage.txt
+
+# Mark dups
+samtools markdup "${WORK_DIR}/aligned/sorted_merged-good.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" 2> ${WORK_DIR}/debug/good_dedup.out
+samtools markdup "${WORK_DIR}/aligned/sorted_merged-IS.bam" "${WORK_DIR}/aligned/sorted_merged_dups_marked_IS.bam" 2> ${WORK_DIR}/debug/IS_dedup.out
+
+# Get BoC
+# To avoid cross-reaction with SARS a few regions are excluded from analysis
+samtools depth -a -b $NON_CROSS_REACT_REGIONS -Q 4 "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" | awk '$1=="MN908947.3"' > ${WORK_DIR}/aligned/viral_depth_per_base.txt 2> ${WORK_DIR}/debug/viral_depth.out
+
+# Gather alignment qc statistics
+echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/all_alignment_stats.txt
+samtools flagstat "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
+
+echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/all_alignment_stats.txt
+samtools stats "${WORK_DIR}/aligned/sorted_merged.bam"  >> ${WORK_DIR}/aligned/all_alignment_stats.txt
+
+echo "ʕ·ᴥ·ʔ :samtools flagstat result" > ${WORK_DIR}/aligned/viral_alignment_stats.txt
+samtools flagstat "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam"  >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
+
+echo "ʕ·ᴥ·ʔ : samtools stats result " >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
+samtools stats "${WORK_DIR}/aligned/sorted_merged_dups_marked_viral.bam" >> ${WORK_DIR}/aligned/viral_alignment_stats.txt
+
+
+# Write results to a file
+echo "ʕ·ᴥ·ʔ : Compiling results"
+"${PYTHON}" $COMPILE_RESULT $LIB_NAME $WORK_DIR
+echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
+
 if  [ "$APP_MODE" = 1 ]
 then
   zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
