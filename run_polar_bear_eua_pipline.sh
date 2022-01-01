@@ -159,7 +159,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 
     # Samtools fixmate fills in mate coordinates and insert size fields for deduping
     # Samtools fixmate is also converting SAM to BAM
-    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
+    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/matefix.out
 
     # Sort reads based on position for deduping
     samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
@@ -167,7 +167,7 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
 done
 
 # Merge BAMs if multiple BAMs were generated
-samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.txt
+samtools merge ${WORK_DIR}/aligned/sorted_merged.sam ${WORK_DIR}/aligned/*_matefixd_sorted.sam 2> ${WORK_DIR}/debug/marge_out.out
 
 ####### Second block of work: Seperate viral data from control data
 echo "ʕ·ᴥ·ʔ : Removing Recombinants..."
@@ -220,10 +220,10 @@ echo "ʕ·ᴥ·ʔ : Pipeline completed, check ${WORK_DIR}/final for result"
 
 if  [ "$APP_MODE" = 1 ]
 then
-  zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned
+  zip -r ${basespace_output_path_for_sample}/aligned_files ${WORK_DIR}/aligned 2> ${WORK_DIR}/debug/zip.out
 
   mv ${WORK_DIR}/final/result.csv ${basespace_output_path_for_sample}
 
-  cp ${WORK_DIR}/debug/* data/logs/
+  mv ${WORK_DIR}/debug/* data/logs/
 
 fi
