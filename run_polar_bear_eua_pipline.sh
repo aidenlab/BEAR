@@ -155,14 +155,14 @@ for ((i = 0; i < ${#read1files[@]}; ++i)); do
     ALIGNED_FILE=${WORK_DIR}/aligned/${FILE}"_mapped"
 
     # Align reads to viral reference
-    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+#    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> ${WORK_DIR}/debug/align.out
+    bwa mem -t $THREADS $REFERENCE $file1 $file2 > $ALIGNED_FILE".sam" 2> data/logs/align.out
+    # Samtools fixmate fills in mate coordinates and insert size fields for deduping
+    # Samtools fixmate is also converting SAM to BAM
+    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
 
-#    # Samtools fixmate fills in mate coordinates and insert size fields for deduping
-#    # Samtools fixmate is also converting SAM to BAM
-#    samtools fixmate -m $ALIGNED_FILE".sam" $ALIGNED_FILE"_matefixd.sam"
-#
-#    # Sort reads based on position for deduping
-#    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
+    # Sort reads based on position for deduping
+    samtools sort -o $ALIGNED_FILE"_matefixd_sorted.sam" $ALIGNED_FILE"_matefixd.sam" 2> ${WORK_DIR}/debug/sort.out
 
 done
 
