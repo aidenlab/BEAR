@@ -96,9 +96,19 @@ then
     testname=$(ls -l ${FASTQ_DIR} | awk 'NR==1{print $9}')
     if [ "${testname: -3}" == ".gz" ]
     then
+      if  [ "$APP_MODE" = 1 ]
+      then
+        read1=${TOP_DIR}"/*${READ1_STR}*.fastq.gz"
+      else
         read1=${TOP_DIR}"/fastq/*${READ1_STR}*.fastq.gz"
+      fi
     else
+      if  [ "$APP_MODE" = 1 ]
+      then
+        read1=${TOP_DIR}"/*${READ1_STR}*.fastq"
+      else
         read1=${TOP_DIR}"/fastq/*${READ1_STR}*.fastq"
+      fi
     fi
 else
     echo "ʕ·ᴥ·ʔ : Failed to find any files matching ${FASTQ_DIR}"
