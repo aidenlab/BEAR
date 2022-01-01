@@ -73,7 +73,6 @@ def return_data_from_viral_align_stats(viral_align_stats_file_path):
 
     return viral_reads, viral_duplicates, insert_var, insert_dev_var
 
-
 def return_data_from_all_align_stats(all_align_stats_file_path):
     reads = []
     mapped_reads_count = []
@@ -84,8 +83,12 @@ def return_data_from_all_align_stats(all_align_stats_file_path):
                     mapped_reads_count = float(line.split()[0])
                 if 'paired in sequencing' in line:
                     reads = int(line.split()[0])/2
+            else:
+                if 'average length:' in line:
+                    read_length = int(line.split()[3])
 
-    return mapped_reads_count, reads
+
+    return mapped_reads_count, read_length, reads
 
 def return_data_from_amplicon_counts(amplicon_control_counts_path):
     with open(amplicon_control_counts_path) as amplicon_control_counts_file:
@@ -101,7 +104,7 @@ def compile_results_into_file(library_name, top_directory):
     path_to_clinical_result = str(top_directory) + "/final/result.csv"
     amplicon_control_counts = str(top_directory) + "/aligned/ampliconCoverage.txt"
 
-    mapped_reads_count, reads = return_data_from_all_align_stats(all_align_stats_file)
+    mapped_reads_count, read_length, reads = return_data_from_all_align_stats(all_align_stats_file)
     viral_reads, viral_duplicates, insert_var, insert_dev_var = return_data_from_viral_align_stats(viral_align_stats_file)
     control_count = return_data_from_amplicon_counts(amplicon_control_counts)
 
@@ -109,7 +112,7 @@ def compile_results_into_file(library_name, top_directory):
     mapped_reads_var = return_number_of_mapped_reads(mapped_reads_count, reads)
     dup_reads_var = return_viral_read_dup(viral_duplicates, viral_reads)
     breadth_of_coverage_var = return_breadth_of_coverage(viral_depth_per_base_file)
-    diagnostic_result_var = determine_diagnostic_result(breadth_of_coverage_var, control_count, reads)
+    diagnostic_result_var = determine_diagnostic_result(breadth_of_coverage_var, control_count, read_length, reads)
 
     write_stats_file(path_to_qc_result,
                      library_name,
