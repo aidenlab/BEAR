@@ -1,11 +1,14 @@
-# Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline BaseSpace Native App Repository
+# Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline BaseSpace Native App
+
 
 ---
 
 # Repository Manifest
-
-
-
+* Dockerfile : Dockerfile for building Docker image capable of running the BEAR pipeline. 
+* requirements.txt: List of modules required for running BEAR pipeline.
+* callback.js: Script which specifies which image to download from Docker Hub, file system and command run upon the launch of an app session. 
+* input_form.json: JSON file which defines the user input form for the app. 
+* app_handler.py: Script which passes user input to BEAR pipeline within a running Docker container in an app session. 
 
 ---
 The [Bioinformatics Evaluation of Assembly and Resequencing](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1) (BEAR) pipeline is for the analysis of targeted pathogen sequencing using POLAR.  The app determines if a sample was positive or negative for the presence of a specific pathogen. 
