@@ -1,4 +1,4 @@
-# Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline BaseSpace Native App
+#   Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline BaseSpace Native App
 
 # Overview
 The [Bioinformatics Evaluation of Assembly and Resequencing](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1) (BEAR) pipeline is for the analysis of   targeted pathogen sequencing using POLAR. The pipeline was packaged into an [Illumina Native App in BaseSpace](https://developer.basespace.illumina.com/docs/content/documentation/native-apps/native-app-overview#BaseSpaceNativeAppEngineOverview). This repository contains all the necessary files needed to create the app.
