@@ -1,5 +1,6 @@
 FROM ubuntu:20.04
 LABEL maintainer="adastra.aspera.per@gmail.com"
+LABEL org.opencontainers.image.source=https://github.com/aidenlab/POLAR-BEAR.git
 
 ENV DEBIAN_FRONTEND noninteractive
 
