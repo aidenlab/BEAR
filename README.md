@@ -160,7 +160,7 @@ Send in the number of threads you wish to use for BWA alignment via `-t threads`
 
 ## Repository
 
-The Polar code can be found at https://github.com/aidenlab/Polar.git
+The BEAR code can be found at https://github.com/aidenlab/POLAR-BEAR.git
 
 The repository contains the viral genomes to test against in the folder
 `betacoronaviruses`. The subfolder `match` contains the viral genome
