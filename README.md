@@ -111,20 +111,14 @@ docker run --rm aidenlab/polar:latest -d /tmp/test
 git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
 
-3. Modify the variables at the top of align_slurm.sh to correspond to your system's load, commands, and queues.
+3. Modify the variables at the top of align_slurm.sh to correspond to your system's load, commands, and queues. Systems vary in their resources, but we have tried our best to make it easy to modify the SLURM script to fit your system. Modify the variables at the top of the script to work with your system. For example, you can modify "LOAD_BWA" so that it loads the appropriate module or exports the right path. You can also change the call "BWA_CMD" to be the
+full path to the executable.
    
 4. Run the provided test dataset to check instillation.
 
 ```bash
 cd ./POLAR-BEAR/test && ../align_slurm.sh
 ```
-
-Systems vary in their resources, but we have tried our best to make it 
-easy to modify the SLURM script to fit your system. Modify the variables
-at the top of the script to work with your system. For example, you can 
-modify "LOAD_BWA" so that it loads the appropriate module or exports
-the right path. You can also change the call "BWA_CMD" to be the
-full path to the executable.
 
 ## Run BEAR on a single machine 
 
