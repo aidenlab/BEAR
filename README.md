@@ -1,9 +1,9 @@
-# Pipeline for Polar: viral diagnostic for SARS-CoV-2
+# Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline
 ![Protocol image](images/polar_protocol.png)
 
-Paper: https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1
 
-Protocol: https://www.protocols.io/view/pathogen-oriented-low-cost-assembly-amp-re-sequenc-bearjad6
+The Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline is used to analyze sequencing data produced from using POLAR. 
+[POLAR](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v3) is a rapid, low cost, and highly sensitive SARS-CoV-2 diagnostic based on whole genome sequencing. [Instructions on how to perform POLAR](https://www.protocols.io/view/pathogen-oriented-low-cost-assembly-amp-re-sequenc-bearjad6) are documented here via the protocol.io platform.
 
 # Contents
 * [Installation](#installation)
