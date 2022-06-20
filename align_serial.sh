@@ -36,7 +36,7 @@ threadsHelp="* [THREADS] is number of threads for BWA alignment"
 indexHelp="* -j produce index file for aligned files"
 reducedHelp="* -r reduced set for alignment"
 stageHelp="* -k start pipeline after alignment"
-helpHelp="* -h: print this help and exit"
+helpHelp="* -h print this help and exit"
 
 printHelpAndExit() {
     echo -e "$usageHelp"
