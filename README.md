@@ -15,8 +15,7 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
 # Contents
 * [Installation](#installation)
    * [Install BEAR and requirements manually](#install-bear-and-requirements-manually)
-   * [Install BEAR with installation script](#install-bear-with-installation-script)
-   * [Install using an existing Conda installation](#install-bear-using-an-existing-conda-installation)
+   * [Install using Conda](#install-bear-using-an-existing-conda-installation)
 * [Running](#running)
    * [Run BEAR with Docker/Singularity](#run-bear-with-dockersingularity)
    * [Run BEAR on a single machine](#run-bear-on-a-single-machine)
@@ -69,31 +68,6 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 cd ./POLAR-BEAR/test && ../align_serial.sh
 ```      
 
-## Install BEAR with installation script
-
-You can install the Polar pipeline and all its dependencies in one go with a provided bash script, [install_conda_and_bear_env.sh](https://github.com/aidenlab/Polar/blob/master/install_conda_and_bear_env.sh) .
-
-The script performs the following:
-
-* Installs Miniconda3
-* Installs Polar from Github
-* Creates a conda environment with all the dependencies
-* Runs a test scenario
-
-If the script is called without any parameters it will create two directories, `Polar` and `miniconda3_polar` in the current folder for the pipeline and the Miniconda installation. Calling with a parameter will install at the specified location. 
-
-The following example will install Polar pipeline in `Polar_install` folder under the home directory.
-
-```bash
-curl -sl https://raw.githubusercontent.com/aidenlab/Polar/master/Prepare_Polar_Conda_Env.sh?token=AID67XLJCB6IR2322CZNQYS6UUJX4 | bash -s -- ~/Polar_install
-```
-Calling the pipeline then will require initializing the conda environment first:
-```bash
-source ~/Polar_install/miniconda3_polar/etc/profile.d/conda.sh
-conda activate Polar_conda_env
-~/Polar_install/Polar/align_serial.sh -h
-conda deactivate
-```
 ## Install BEAR using an existing Conda installation
 
 If you already have a Anaconda/Miniconda installation then you can create a conda environment using the provided environment definition.
@@ -121,18 +95,14 @@ conda deactivate
 
 The BEAR pipeline is typically run on a Linux operating system, preferably (but not necessarily) on a computer cluster. The included test dataset can run on a laptop in under 5 minutes
 
-## Run BEAR with Docker/Singularity
+## Run BEAR with Docker
 
 Running the Polar pipeline with the provided test using Docker
 ```bash
 docker run -rm aidenlab/polar:latest -d /tmp/test
 cd ./POLAR-BEAR/test && ../align_serial.sh
 ``` 
-or with Singularity (we clone the repository only for the test data)
-```bash
-git clone https://github.com/aidenlab/Polar.git
-singularity run docker://aidenlab/polar:latest --pwd /fastq -B ./Polar/test:/fastq
-``` 
+
 ## Run BEAR on SLURM
 
 1. Ensure you have installed required software.
