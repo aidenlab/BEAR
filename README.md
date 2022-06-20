@@ -99,8 +99,7 @@ The BEAR pipeline is typically run on a Linux operating system, preferably (but 
 
 Running the Polar pipeline with the provided test using Docker
 ```bash
-docker run -rm aidenlab/polar:latest -d /tmp/test
-cd ./POLAR-BEAR/test && ../align_serial.sh
+docker run --rm aidenlab/polar:latest -d /tmp/test
 ``` 
 
 ## Run BEAR on SLURM
