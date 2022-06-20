@@ -71,7 +71,7 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 
 ## Install BEAR with installation script
 
-You can install the Polar pipeline and all its dependencies in one go with a provided bash script, [Prepare_Polar_Conda_Env.sh](https://github.com/aidenlab/Polar/blob/master/Prepare_Polar_Conda_Env.sh) .
+You can install the Polar pipeline and all its dependencies in one go with a provided bash script, [install_conda_and_bear_env.sh](https://github.com/aidenlab/Polar/blob/master/install_conda_and_bear_env.sh) .
 
 The script performs the following:
 
