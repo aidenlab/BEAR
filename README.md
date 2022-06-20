@@ -15,7 +15,7 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
 # Contents
 * [Installation](#installation)
    * [Install BEAR and requirements manually](#install-bear-and-requirements-manually)
-   * [Install using Conda](#install-bear-using-an-existing-conda-installation)
+   * [Install BEAR using Conda](#install-bear-using-conda)
 * [Running](#running)
    * [Run BEAR with Docker/Singularity](#run-bear-with-dockersingularity)
    * [Run BEAR on a single machine](#run-bear-on-a-single-machine)
@@ -68,9 +68,7 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 cd ./POLAR-BEAR/test && ../align_serial.sh
 ```      
 
-## Install BEAR using an existing Conda installation
-
-If you already have a Anaconda/Miniconda installation then you can create a conda environment using the provided environment definition.
+## Install BEAR using Conda
 
 1. Clone or download the Polar pipeline.
 
