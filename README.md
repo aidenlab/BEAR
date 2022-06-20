@@ -1,17 +1,26 @@
 # Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline
 
-The Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline is used to analyze sequencing data produced from using POLAR. 
-[POLAR](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v3) is a rapid, low-cost, highly sensitive SARS-CoV-2 diagnostic based on whole-genome sequencing. [Instructions on performing POLAR](https://www.protocols.io/view/pathogen-oriented-low-cost-assembly-amp-re-sequenc-bearjad6) are documented here via the protocol.io platform.
+# Overview
 
+BEAR is the viral diagnostic pipeline, currently designed for SARS-Cov-2. For more information, see our [preprint](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v3) on BioRxiv.
+
+The pipeline takes as input paired-end sequencing reads and creates as output a PDF with the result of the test for the virus (positive or negative). The PDF also includes other qualitative and quantitative measures, detailed below.
+
+![Pipeline image](images/polar_pipeline.png)
+
+The pipeline first aligns the reads to a database of betacoronaviruses (performed in parallel). Separately, it creates contigs from the reads. This contigged assembly is then pairwise aligned to SARS-CoV-2.
+
+The Breadth of coverage statistics and coverage data are gathered after alignment is complete. Custom Python code creates a dotplot showing the quality of the *de novo* assembly to the match viral genome (SARS-CoV-2), breadth of coverage, and bar plots indicating the breadth of coverage percentage of the reads to the database of related viral genomes.
 
 # Contents
 * [Installation](#installation)
-   * [Install Polar and requirements manually](#install-bear-and-requirements-manually)
-   * [Install Polar with installation script](#install-bear-with-installation-script)
+   * [Install BEAR and requirements manually](#install-bear-and-requirements-manually)
+   * [Install BEAR with installation script](#install-bear-with-installation-script)
    * [Install using an existing Conda installation](#install-bear-using-an-existing-conda-installation)
-   * [Running Polar with Docker/Singularity](#running-bear-with-dockersingularity)
-   * [Running Polar on a single machine](#running-bear-on-a-single-machine)
-   * [Running Polar on SLURM](#running-bear-on-slurm)
+* [Running](#running)
+   * [Run BEAR with Docker/Singularity](#run-bear-with-dockersingularity)
+   * [Run BEAR on a single machine](#run-bear-on-a-single-machine)
+   * [Run BEAR on SLURM](#run-bear-on-slurm)
 * [Detailed Guide](#detailed-guide)
    * [Usage and options](#usage-and-options)
    * [Repository](#repository)
@@ -20,9 +29,7 @@ The Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline is us
 
 # Installation
 
-The BEAR pipeline and all its dependencies are Linux based, typically running under a Linux 
-operating system, preferably (but not necessarily) on a computer cluster. The included test 
-set can run on a laptop in under 5 minutes. There are several options for installation, detailed below.
+The BEAR pipeline and all its dependencies are Linux based. There are several options for installation, detailed below. The included test dataset can be used to verify instillation. 
 
 ## Install BEAR and requirements manually
 
@@ -82,11 +89,10 @@ curl -sl https://raw.githubusercontent.com/aidenlab/Polar/master/Prepare_Polar_C
 ```
 Calling the pipeline then will require initializing the conda environment first:
 ```bash
-    source ~/Polar_install/miniconda3_polar/etc/profile.d/conda.sh
-    conda activate Polar_conda_env
-    ~/Polar_install/Polar/align_serial.sh -h
-    ...
-    conda deactivate
+source ~/Polar_install/miniconda3_polar/etc/profile.d/conda.sh
+conda activate Polar_conda_env
+~/Polar_install/Polar/align_serial.sh -h
+conda deactivate
 ```
 ## Install BEAR using an existing Conda installation
 
@@ -110,7 +116,12 @@ conda activate bear_conda_env
 cd ./POLAR-BEAR/test && ../align_serial.sh
 conda deactivate
 ```
-## Running BEAR with Docker/Singularity
+
+# Running
+
+The BEAR pipeline is typically run on a Linux operating system, preferably (but not necessarily) on a computer cluster. The included test dataset can run on a laptop in under 5 minutes
+
+## Run BEAR with Docker/Singularity
 
 Running the Polar pipeline with the provided test using Docker
 ```bash
@@ -119,10 +130,10 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 ``` 
 or with Singularity (we clone the repository only for the test data)
 ```bash
-    git clone https://github.com/aidenlab/Polar.git
-    singularity run docker://aidenlab/polar:latest --pwd /fastq -B ./Polar/test:/fastq
+git clone https://github.com/aidenlab/Polar.git
+singularity run docker://aidenlab/polar:latest --pwd /fastq -B ./Polar/test:/fastq
 ``` 
-## Running BEAR on SLURM
+## Run BEAR on SLURM
 
 1. Ensure you have installed required software.
 2. Clone repository.
@@ -131,8 +142,7 @@ or with Singularity (we clone the repository only for the test data)
 git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
 
-3. Modify the variables at the top of align_slurm.sh to
-   correspond to your system's load, commands, and queues.
+3. Modify the variables at the top of align_slurm.sh to correspond to your system's load, commands, and queues.
    
 4. Run the provided test dataset to check instillation.
 
@@ -147,7 +157,7 @@ modify "LOAD_BWA" so that it loads the appropriate module or exports
 the right path. You can also change the call "BWA_CMD" to be the
 full path to the executable.
 
-## Running BEAR on a single machine 
+## Run BEAR on a single machine 
 
 1. Ensure you have installed required software.
 2. Clone repository.
@@ -159,42 +169,22 @@ git clone https://github.com/aidenlab/POLAR-BEAR.git
 3. Run the provided test dataset to check instillation.
 
 ```bash
-    cd ./POLAR-BEAR/test && ../align_serial.sh
+cd ./POLAR-BEAR/test && ../align_serial.sh
 ```
 
 # Detailed Guide
 
-Polar is the viral diagnostic pipeline, currently designed
-for SARS-Cov-2. For more information, see
-the paper: https://www.biorxiv.org/content/10.1101/2020.04.25.061499v1
-
-The pipeline takes as input paired-end sequencing reads
-and creates as output a PDF with the result of the test for the virus
-(positive or negative). The PDF also includes other qualitative and 
-quantitative measures, detailed below.
-
-![Pipeline image](images/polar_pipeline.png)
-
-The pipeline first aligns the reads to a database of betacoronaviruses 
-(performed in parallel). Separately, it creates contigs from the
-reads. This contigged assembly is then pairwise aligned to SARS-CoV-2.
-
-Breadth of coverage statistics and coverage data are gathered after alignment is complete.
-Custom Python code creates a dotplot showing the quality of the de novo
-assembly to the match viral genome (SARS-CoV-2), breadth of coverage, and
-bar plots indicating the breadth of coverage percentage of the reads to the 
-database of related viral genomes.
-
 ## Usage and options
+
 ```
 Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jkrh
-* [TOP_DIR] is the top level directory (default $(pwd))
+  [TOP_DIR] is the top level directory (default $(pwd))
   [TOP_DIR]/fastq must contain the fastq files
-* [THREADS] is number of threads for BWA alignment
-* -j produce index file for aligned files
-* -k start pipeline after all alignments have finished
-* -r reduced set for alignment
-* -h: print this help and exit
+  [THREADS] is number of threads for BWA alignment
+  -j produce index file for aligned files
+  -k start pipeline after all alignments have finished
+  -r reduced set for alignment
+  -h: print this help and exit
 ```
 
 For debugging, you can have the pipeline create indices of the aligned bam
