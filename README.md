@@ -141,13 +141,13 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 
 ```
 Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jkrh
-  [TOP_DIR] is the top level directory (default $(pwd))
+* [TOP_DIR] is the top level directory (default "/fastq")
   [TOP_DIR]/fastq must contain the fastq files
-  [THREADS] is number of threads for BWA alignment
-  -j produce index file for aligned files
-  -k start pipeline after all alignments have finished
-  -r reduced set for alignment
-  -h: print this help and exit
+* [THREADS] is number of threads for BWA alignment
+* -j produce index file for aligned files
+* -r reduced set for alignment
+* -k start pipeline after alignment
+* -h print this help and exit
 ```
 
 For debugging, you can have the pipeline create indices of the aligned bam
