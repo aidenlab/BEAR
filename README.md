@@ -6,12 +6,12 @@ The Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline is us
 
 # Contents
 * [Installation](#installation)
-   * [Install Polar and requirements manually](#install-polar-and-requirements-manually)
-   * [Install Polar with installation script](#install-polar-with-installation-script)
-   * [Install using an existing Conda installation](#install-using-an-existing-conda-installation)
-   * [Running Polar with Docker/Singularity](#running-polar-with-dockersingularity)
-   * [Running Polar on a single machine](#running-polar-on-a-single-machine)
-   * [Running Polar on SLURM](#running-polar-on-slurm)
+   * [Install Polar and requirements manually](#install-bear-and-requirements-manually)
+   * [Install Polar with installation script](#install-bear-with-installation-script)
+   * [Install using an existing Conda installation](#install-bear-using-an-existing-conda-installation)
+   * [Running Polar with Docker/Singularity](#running-bear-with-dockersingularity)
+   * [Running Polar on a single machine](#running-bear-on-a-single-machine)
+   * [Running Polar on SLURM](#running-bear-on-slurm)
 * [Detailed Guide](#detailed-guide)
    * [Usage and options](#usage-and-options)
    * [Repository](#repository)
@@ -42,23 +42,27 @@ You can install the Polar pipeline and all its dependencies manually.
     * [Pandas](https://github.com/pandas-dev/pandas)
 
 2. Clone or download the repository from Github
+
 ```bash
-        git clone https://github.com/aidenlab/POLAR-BEAR.git
-        cd ./POLAR-BEAR/test && ../align_serial.sh
+git clone https://github.com/aidenlab/POLAR-BEAR.git
+cd ./POLAR-BEAR/test && ../align_serial.sh
 ``` 
-    or
+
+or
+
 ```bash
-        curl -sSL -o POLAR-BEAR.zip https://github.com/aidenlab/POLAR-BEAR/archive/master.zip
-        unzip POLAR-BEAR.zip && mv POLAR-BEAR-master POLAR-BEAR && rm POLAR-BEAR.zip
-        cd ./POLAR-BEAR/test && ../align_serial.sh
+curl -sSL -o POLAR-BEAR.zip https://github.com/aidenlab/POLAR-BEAR/archive/master.zip
+unzip POLAR-BEAR.zip && mv POLAR-BEAR-master POLAR-BEAR && rm POLAR-BEAR.zip
+cd ./POLAR-BEAR/test && ../align_serial.sh
 ``` 
 
 3. Run the provided test dataset to check instillation
+
 ```bash
-        cd ./POLAR-BEAR/test && ../align_serial.sh
+cd ./POLAR-BEAR/test && ../align_serial.sh
 ```      
 
-## Install Polar with installation script
+## Install BEAR with installation script
 
 You can install the Polar pipeline and all its dependencies in one go with a provided bash script, [Prepare_Polar_Conda_Env.sh](https://github.com/aidenlab/Polar/blob/master/Prepare_Polar_Conda_Env.sh) .
 
@@ -72,8 +76,9 @@ The script performs the following:
 If the script is called without any parameters it will create two directories, `Polar` and `miniconda3_polar` in the current folder for the pipeline and the Miniconda installation. Calling with a parameter will install at the specified location. 
 
 The following example will install Polar pipeline in `Polar_install` folder under the home directory.
+
 ```bash
-    curl -sl https://raw.githubusercontent.com/aidenlab/Polar/master/Prepare_Polar_Conda_Env.sh?token=AID67XLJCB6IR2322CZNQYS6UUJX4 | bash -s -- ~/Polar_install
+curl -sl https://raw.githubusercontent.com/aidenlab/Polar/master/Prepare_Polar_Conda_Env.sh?token=AID67XLJCB6IR2322CZNQYS6UUJX4 | bash -s -- ~/Polar_install
 ```
 Calling the pipeline then will require initializing the conda environment first:
 ```bash
@@ -83,48 +88,56 @@ Calling the pipeline then will require initializing the conda environment first:
     ...
     conda deactivate
 ```
-## Install using an existing Conda installation
+## Install BEAR using an existing Conda installation
 
 If you already have a Anaconda/Miniconda installation then you can create a conda environment using the provided environment definition.
 
 1. Clone or download the Polar pipeline.
+
 ```bash
-        git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
+
 2. Create the conda environment.
+
 ```bash
-        conda env create -n bear_conda_env -f ./POLAR-BEAR/bear_conda_env.yml
+conda env create -n bear_conda_env -f ./POLAR-BEAR/bear_conda_env.yml
 ```
+
 3. Activate the conda environment and run the provided test dataset to check instillation.
 ```bash
-        conda activate bear_conda_env    
-        cd ./POLAR-BEAR/test && ../align_serial.sh
-        conda deactivate
+conda activate bear_conda_env    
+cd ./POLAR-BEAR/test && ../align_serial.sh
+conda deactivate
 ```
-## Running Polar with Docker/Singularity
+## Running BEAR with Docker/Singularity
 
 Running the Polar pipeline with the provided test using Docker
 ```bash
-    docker run -rm aidenlab/polar:latest -d /tmp/test
-        cd ./POLAR-BEAR/test && ../align_serial.sh
+docker run -rm aidenlab/polar:latest -d /tmp/test
+cd ./POLAR-BEAR/test && ../align_serial.sh
 ``` 
 or with Singularity (we clone the repository only for the test data)
 ```bash
     git clone https://github.com/aidenlab/Polar.git
     singularity run docker://aidenlab/polar:latest --pwd /fastq -B ./Polar/test:/fastq
 ``` 
-## Running Polar on SLURM
+## Running BEAR on SLURM
 
 1. Ensure you have installed required software.
 2. Clone repository.
+
 ```bash
-      git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
+
 3. Modify the variables at the top of align_slurm.sh to
    correspond to your system's load, commands, and queues.
+   
 4. Run the provided test dataset to check instillation.
+
 ```bash
-    cd ./POLAR-BEAR/test && ../align_slurm.sh
+cd ./POLAR-BEAR/test && ../align_slurm.sh
 ```
 
 Systems vary in their resources, but we have tried our best to make it 
@@ -134,14 +147,17 @@ modify "LOAD_BWA" so that it loads the appropriate module or exports
 the right path. You can also change the call "BWA_CMD" to be the
 full path to the executable.
 
-## Running Polar on a single machine 
+## Running BEAR on a single machine 
 
 1. Ensure you have installed required software.
 2. Clone repository.
+
 ```bash
-      git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
+
 3. Run the provided test dataset to check instillation.
+
 ```bash
     cd ./POLAR-BEAR/test && ../align_serial.sh
 ```
