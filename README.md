@@ -1,16 +1,18 @@
 # Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline
 
-# Overview
+# BEAR Pipeline Overview
 
 BEAR is the viral diagnostic pipeline, currently designed for SARS-Cov-2. For more information, see our [preprint](https://www.biorxiv.org/content/10.1101/2020.04.25.061499v3) on BioRxiv.
 
 The pipeline takes as input paired-end sequencing reads and creates as output a PDF with the result of the test for the virus (positive or negative). The PDF also includes other qualitative and quantitative measures, detailed below.
 
-![Pipeline image](images/polar_pipeline.png)
-
 The pipeline first aligns the reads to a database of betacoronaviruses (performed in parallel). Separately, it creates contigs from the reads. This contigged assembly is then pairwise aligned to SARS-CoV-2.
 
 The Breadth of coverage statistics and coverage data are gathered after alignment is complete. Custom Python code creates a dotplot showing the quality of the *de novo* assembly to the match viral genome (SARS-CoV-2), breadth of coverage, and bar plots indicating the breadth of coverage percentage of the reads to the database of related viral genomes.
+
+![Pipeline image](images/polar_pipeline.png)
+
+###### Figure 1. The BEAR Pipeline Analyzes and Visualizes Test Results with a Single Click. Workflow diagram describing the one-click analysis pipeline. The pipeline aligns the sequenced reads to a database of coronaviruses; if run on a cluster, this is done in parallel. Separately, the pipeline creates contigs from the sequenced reads. The resulting de novo assembly is then pairwise aligned to the SARS-CoV-2 reference genome. A custom python script then analyzes these data to determine the test result and compiles dot plots and alignment percentages into a single PDF.
 
 # Contents
 * [Installation](#installation)
@@ -168,18 +170,22 @@ genome. The subfolder `far` contains other related genomes.
 
 ## Setup and output folders
 
-Place the paired end sequenced reads in a folder labeled `fastq`.
-For example, if your experiment is called "Library1", you should have
-a folder labeled "Library1" and it should contain one subfolder labeled
-"fastq" with the fastq files in it.
+Place the paired-end sequenced reads in a folder labeled `fastq.` For example, if your experiment is called "Library001", you should have a folder labeled "Library001," and it should contain one subfolder labeled "fastq" with the fastq files in it. The fastqs can be zipped or unzipped, and there can be multiple pairs. This directory structure is shown below in the form of a tree structure.
 
-The fastqs can be zipped or unzipped, and there can be multiple pairs.
+```
+Library001
+└── fastq
+    ├── library001_R1.fastq.gz
+    └── library001_R2.fastq.gz
+```
 
-The pipeline will create folders "work", "log", and "final" under "Library1".
+The pipeline will create folders "work", "log", and "final" under "Library001".
 The "final" folder will contain the assembly fasta and the PDF report. Below 
 are examples of a positive report (A) and a negative report (B). 
 
 ![Report images](images/pos_neg_report.png)
+
+###### Figure 2. Example of Postive and Negative BEAR Report. Each report includes a genome dot plot of the de novo assembly against the SARS-CoV-2 reference genome, with a coverage track of sequenced reads aligned to the SARS-CoV-2 reference genome above the dot plot. The report also includes the breadth of coverage of sequenced reads aligned to 17 different coronaviruses. The diagnostic answer is given in the form of a “+” or “-” symbol and “Positive” or “Negative” for SARS-CoV-2 coronavirus in the top right corner of the report.
 
 
 # Contributing
