@@ -24,7 +24,6 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
    * [Run BEAR on SLURM](#run-bear-on-slurm)
 * [Detailed Guide](#detailed-guide)
    * [Usage and options](#usage-and-options)
-   * [Repository](#repository)
    * [Setup and output folders](#setup-and-output-folders)
 * [Contributing](#contributing)
 
@@ -157,16 +156,6 @@ For quicker processing, you can choose to align to a reduced set that includes
 only the "match" and "close" genomes; pass in the `-r` flag to enable this option.
 
 Send in the number of threads you wish to use for BWA alignment via `-t threads`.
-
-## Repository
-
-The BEAR code can be found at https://github.com/aidenlab/POLAR-BEAR.git
-
-The repository contains the viral genomes to test against in the folder
-`betacoronaviruses`. The subfolder `match` contains the viral genome
-we are testing against (SARS-CoV-2). The subfolder `close`
-contains the genomes phylogentically most closely related to the `match`
-genome. The subfolder `far` contains other related genomes. 
 
 ## Setup and output folders
 
