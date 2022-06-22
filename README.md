@@ -107,7 +107,7 @@ docker run --rm aidenlab/polar:latest -d /tmp/test
 
 ## Run BEAR on SLURM
 
-1. Ensure you have installed required software.
+1. Ensure you have installed the required [dependencies](#install-bear-and-dependencies-manually).
 2. Clone repository.
 
 ```bash
@@ -125,7 +125,7 @@ cd ./POLAR-BEAR/test && ../align_slurm.sh
 
 ## Run BEAR on a single machine 
 
-1. Ensure you have installed required software.
+1. Ensure you have installed the required [dependencies](#install-bear-and-dependencies-manually).
 2. Clone repository.
 
 ```bash
