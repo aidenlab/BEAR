@@ -14,7 +14,7 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
 
 # Contents
 * [Installation](#installation)
-   * [Install BEAR and requirements manually](#install-bear-and-requirements-manually)
+   * [Install BEAR and dependencies manually](#install-bear-and-dependencies-manually)
    * [Install BEAR using Conda](#install-bear-using-conda)
 * [Running](#running)
    * [Run BEAR with Docker/Singularity](#run-bear-with-dockersingularity)
@@ -29,13 +29,13 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
 
 # Installation
 
-The BEAR pipeline and all its dependencies are Linux based. There are several options for installation, detailed below. The included test dataset can be used to verify instillation. 
+The BEAR pipeline and all its dependencies are Linux based. There are several options for installation, detailed below. The BEAR pipeline contains a test dataset that can be used to verify instillation. 
 
-## Install BEAR and requirements manually
+## Install BEAR and dependencies manually
 
-You can install the Polar pipeline and all its dependencies manually.
+You can install the BEAR pipeline and all its dependencies manually.
 
-1. Install the dependencies:
+1. Install the dependencies manually:
 
     * [BWA](https://github.com/lh3/bwa)
     * [Samtools](http://www.htslib.org/download)
@@ -71,19 +71,23 @@ cd ./POLAR-BEAR/test && ../align_serial.sh
 
 ## Install BEAR using Conda
 
-1. Clone or download the Polar pipeline.
+You can install the BEAR pipeline and all its dependencies using [Conda](https://docs.conda.io/en/latest/).
+
+1. If not already done, install [Conda](https://docs.conda.io/en/latest/).
+
+2. Clone or download the BEAR pipeline.
 
 ```bash
 git clone https://github.com/aidenlab/POLAR-BEAR.git
 ```
 
-2. Create the conda environment.
+3. Create the conda environment.
 
 ```bash
 conda env create -n bear_conda_env -f ./POLAR-BEAR/bear_conda_env.yml
 ```
 
-3. Activate the conda environment and run the provided test dataset to check instillation.
+4. Activate the conda environment and run the provided test dataset to check instillation.
 ```bash
 conda activate bear_conda_env    
 cd ./POLAR-BEAR/test && ../align_serial.sh
