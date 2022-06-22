@@ -17,7 +17,7 @@ The Breadth of coverage statistics and coverage data are gathered after alignmen
    * [Install BEAR and dependencies manually](#install-bear-and-dependencies-manually)
    * [Install BEAR using Conda](#install-bear-using-conda)
 * [Running](#running)
-   * [Run BEAR with Docker/Singularity](#run-bear-with-dockersingularity)
+   * [Run BEAR with Docker](#run-bear-with-docker)
    * [Run BEAR on a single machine](#run-bear-on-a-single-machine)
    * [Run BEAR on SLURM](#run-bear-on-slurm)
 * [Detailed Guide](#detailed-guide)
@@ -100,7 +100,7 @@ The BEAR pipeline is typically run on a Linux operating system, preferably (but 
 
 ## Run BEAR with Docker
 
-Running the Polar pipeline with the provided test using Docker
+Running the BEAR pipeline with the provided test using Docker
 ```bash
 docker run --rm aidenlab/polar:latest -d /tmp/test
 ``` 
