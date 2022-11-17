@@ -51,22 +51,22 @@ You can install the BEAR pipeline and all its dependencies manually.
 2. Clone or download the repository from Github
 
 ```bash
-git clone https://github.com/aidenlab/POLAR-BEAR.git
-cd ./POLAR-BEAR/test && ../align_serial.sh
+git clone https://github.com/aidenlab/BEAR.git
+cd ./BEAR/test && ../align_serial.sh
 ``` 
 
 or
 
 ```bash
-curl -sSL -o POLAR-BEAR.zip https://github.com/aidenlab/POLAR-BEAR/archive/master.zip
-unzip POLAR-BEAR.zip && mv POLAR-BEAR-master POLAR-BEAR && rm POLAR-BEAR.zip
-cd ./POLAR-BEAR/test && ../align_serial.sh
+curl -sSL -o BEAR.zip https://github.com/aidenlab/BEAR/archive/master.zip
+unzip BEAR.zip && mv BEAR-master BEAR && rm BEAR.zip
+cd ./BEAR/test && ../align_serial.sh
 ``` 
 
 3. Run the provided test dataset to check instillation
 
 ```bash
-cd ./POLAR-BEAR/test && ../align_serial.sh
+cd ./BEAR/test && ../align_serial.sh
 ```      
 
 ## Install BEAR using Conda
@@ -78,19 +78,19 @@ You can install the BEAR pipeline and all its dependencies using [Conda](https:/
 2. Clone or download the BEAR pipeline.
 
 ```bash
-git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/BEAR.git
 ```
 
 3. Create the conda environment.
 
 ```bash
-conda env create -n bear_conda_env -f ./POLAR-BEAR/bear_conda_env.yml
+conda env create -n bear_conda_env -f ./BEAR/bear_conda_env.yml
 ```
 
 4. Activate the conda environment and run the provided test dataset to check instillation.
 ```bash
 conda activate bear_conda_env    
-cd ./POLAR-BEAR/test && ../align_serial.sh
+cd ./BEAR/test && ../align_serial.sh
 conda deactivate
 ```
 
@@ -111,7 +111,7 @@ docker run --rm aidenlab/polar:latest -d /tmp/test
 2. Clone repository.
 
 ```bash
-git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/BEAR.git
 ```
 
 3. Modify the variables at the top of align_slurm.sh to correspond to your system's load, commands, and queues. Systems vary in their resources, but we have tried our best to make it easy to modify the SLURM script to fit your system. Modify the variables at the top of the script to work with your system. For example, you can modify "LOAD_BWA" so that it loads the appropriate module or exports the right path. You can also change the call "BWA_CMD" to be the
@@ -120,7 +120,7 @@ full path to the executable.
 4. Run the provided test dataset to check instillation.
 
 ```bash
-cd ./POLAR-BEAR/test && ../align_slurm.sh
+cd ./BEAR/test && ../align_slurm.sh
 ```
 
 ## Run BEAR on a single machine 
@@ -129,13 +129,13 @@ cd ./POLAR-BEAR/test && ../align_slurm.sh
 2. Clone repository.
 
 ```bash
-git clone https://github.com/aidenlab/POLAR-BEAR.git
+git clone https://github.com/aidenlab/BEAR.git
 ```
 
 3. Run the provided test dataset to check instillation.
 
 ```bash
-cd ./POLAR-BEAR/test && ../align_serial.sh
+cd ./BEAR/test && ../align_serial.sh
 ```
 
 # Detailed Guide
