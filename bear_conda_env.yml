@@ -1,10 +1,10 @@
-name: Polar
+name: BEAR
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-# Deps of Polar
+# Deps of BEAR
   - python=3.7
   - pip
   - bwa
