@@ -11,7 +11,7 @@ dependencies:
   - minimap2
   - gawk
   - samtools
-  - megahit
+  - megahit=1.2.8
   - scipy
 # Software
   - curl
