@@ -144,13 +144,12 @@ cd ./BEAR/test && ../align_serial.sh
 
 ```
 Usage: align_serial.sh [-d TOP_DIR] [-t THREADS] -jkrh
-* [TOP_DIR] is the top level directory (default "/fastq")
-  [TOP_DIR]/fastq must contain the fastq files
-* [THREADS] is number of threads for BWA alignment
-* -j produce index file for aligned files
-* -r reduced set for alignment
-* -k start pipeline after alignment
-* -h print this help and exit
+* [TOP_DIR] is the top level directory (default: "/Users/per/Documents/GitHub/BEAR/test")
+        Note: [TOP_DIR]/fastq must contain the fastq files
+* [THREADS] is number of threads for BWA alignment (default: "4")
+* -r Only align to SARS-CoV-2
+* -k Run specific stage of pipeline
+* -h Print this help and exit
 ```
 
 For debugging, you can have the pipeline create indices of the aligned bam
@@ -172,9 +171,40 @@ Library001
     └── library001_R2.fastq.gz
 ```
 
-The pipeline will create folders "work", "log", and "final" under "Library001".
-The "final" folder will contain the assembly fasta and the PDF report. Below 
-are examples of a positive report (A) and a negative report (B). 
+The pipeline will create an "alignments" folder, an "assembly" folder and a "final" folder under "Library001." The "alignments" folder will contain alignments and log files of the data to all the references files. The "assembly" folder will contain the assembly data and log files. The "final" folder will contain the assembly fasta and the final PDF report. 
+
+```
+Library001
+├── alignments
+│   ├── MERS
+│   ├── SARS
+│   ├── SARS-CoV-2
+│   │   ├── aligned
+│   │   └── debug
+│   └── stats.csv
+├── assembly
+│   ├── debug
+│   │   ├── contig.out
+│   │   ├── dotplot.out
+│   │   └── paf.out
+│   └── work
+│       ├── checkpoints.txt
+│       ├── contig.paf
+│       ├── done
+│       ├── intermediate_contigs
+│       ├── log
+│       └── options.json
+├── fastq
+│   ├── library001_R1.fastq.gz
+│   └── library001_R2.fastq.gz
+└── final
+    ├── final.contigs.fa
+    └── report.pdf
+```
+
+Below are examples of a positive report (A) and a negative report (B). 
+
+
 
 ![Report images](images/pos_neg_report.png)
 
