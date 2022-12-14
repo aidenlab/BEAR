@@ -1,19 +1,21 @@
 #!/bin/bash
-##### 
-### Polar pipeline script for viral diagnostic
-### Serial version
-### Given paired end sequencing of putative viral data
-###   -> Aligns to a selection of potential viruses, sorts and merges
-###   -> Assembles the data into contigs
-###   -> After alignment, runs samtools depth to create stats.csv
-###   -> After contigging, creates pairwise alignment
-###   -> Final report created as PDF with dotplot from paf and stats
-#####
+: '
+██████  ███████  █████  ██████
+██   ██ ██      ██   ██ ██   ██
+██████  █████   ███████ ██████
+██   ██ ██      ██   ██ ██   ██
+██████  ███████ ██   ██ ██   ██
 
-### REQUIRED SOFTWARE 
-## You must have the following software installed
-## and available in your PATH
-## BWA; Samtools; Minimap2; Megahit; Python
+Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline
+Serial version
+
+By default, the BEAR pipeline will...
+> Align data against a selection of potential viruses, sorts, merges and marks duplicates.
+> Calculate alignment statistics.
+> Assemble the data into contigs.
+> Perform a pairwise alignment between the assembled contigs and the intended viral target.
+> Create a final report with alignment statistics, a genome by genome dotplot, and the diagnostic result.
+'
 
 ## Threads
 threads=4
