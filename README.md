@@ -1,6 +1,6 @@
 # Bioinformatics Evaluation of Assembly and Resequencing (BEAR) Pipeline
 
-# BEAR Pipeline Overview
+# Overview
 
 BEAR is the viral diagnostic pipeline, currently designed for SARS-Cov-2. The pipeline takes as input paired-end sequencing reads and creates as output a PDF with the result of the test for the virus (positive or negative). The PDF also includes other qualitative and quantitative measures, detailed below.
 
