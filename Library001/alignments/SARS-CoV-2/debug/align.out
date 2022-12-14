@@ -1,0 +1,20 @@
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 100000 sequences (7600000 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 49766, 13, 3)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (71, 99, 140)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (1, 278)
+[M::mem_pestat] mean and std.dev: (109.84, 50.50)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 347)
+[M::mem_pestat] analyzing insert size distribution for orientation RF...
+[M::mem_pestat] (25, 50, 75) percentile: (408, 477, 1449)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (1, 3531)
+[M::mem_pestat] mean and std.dev: (929.54, 728.99)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 4572)
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_pestat] skip orientation RF
+[M::mem_process_seqs] Processed 100000 reads in 1.494 CPU sec, 0.378 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -t 4 /Users/per/Documents/GitHub/BEAR/betacoronaviruses/match/Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1/Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1.fasta /Users/per/Documents/GitHub/BEAR/Library001/fastq/library001_R1.fastq.gz /Users/per/Documents/GitHub/BEAR/Library001/fastq/library001_R2.fastq.gz
+[main] Real time: 0.549 sec; CPU: 1.668 sec

@@ -1,0 +1,31 @@
+2022-12-14 13:31:38 - MEGAHIT v1.2.9
+2022-12-14 13:31:38 - Using megahit_core with POPCNT support
+2022-12-14 13:31:38 - Convert reads to binary library
+2022-12-14 13:31:38 - b'INFO  sequence/io/sequence_lib.cpp  :   77 - Lib 0 (/Users/per/Documents/GitHub/BEAR/Library001/fastq/library001_R1.fastq.gz,/Users/per/Documents/GitHub/BEAR/Library001/fastq/library001_R2.fastq.gz): pe, 100000 reads, 76 max length'
+2022-12-14 13:31:38 - b'INFO  utils/utils.h                 :  152 - Real: 0.1054\tuser: 0.0522\tsys: 0.0161\tmaxrss: 11325440'
+2022-12-14 13:31:38 - k-max reset to: 79 
+2022-12-14 13:31:38 - Start assembly. Number of CPU threads 10 
+2022-12-14 13:31:38 - k list: 21,29,39,59,79 
+2022-12-14 13:31:38 - Memory used: 750
+2022-12-14 13:31:38 - Extract solid (k+1)-mers for k = 21 
+2022-12-14 13:31:41 - Build graph for k = 21 
+2022-12-14 13:31:41 - Assemble contigs from SdBG for k = 21
+2022-12-14 13:31:42 - Local assembly for k = 21
+2022-12-14 13:31:42 - Extract iterative edges from k = 21 to 29 
+2022-12-14 13:31:42 - Build graph for k = 29 
+2022-12-14 13:31:42 - Assemble contigs from SdBG for k = 29
+2022-12-14 13:31:42 - Local assembly for k = 29
+2022-12-14 13:31:43 - Extract iterative edges from k = 29 to 39 
+2022-12-14 13:31:43 - Build graph for k = 39 
+2022-12-14 13:31:43 - Assemble contigs from SdBG for k = 39
+2022-12-14 13:31:43 - Local assembly for k = 39
+2022-12-14 13:31:43 - Extract iterative edges from k = 39 to 59 
+2022-12-14 13:31:43 - Build graph for k = 59 
+2022-12-14 13:31:43 - Assemble contigs from SdBG for k = 59
+2022-12-14 13:31:43 - Local assembly for k = 59
+2022-12-14 13:31:44 - Extract iterative edges from k = 59 to 79 
+2022-12-14 13:31:44 - Build graph for k = 79 
+2022-12-14 13:31:44 - Assemble contigs from SdBG for k = 79
+2022-12-14 13:31:44 - Merging to output final contigs 
+2022-12-14 13:31:44 - 2 contigs, total 29701 bp, min 7365 bp, max 22336 bp, avg 14850 bp, N50 22336 bp
+2022-12-14 13:31:44 - ALL DONE. Time elapsed: 6.441356 seconds 

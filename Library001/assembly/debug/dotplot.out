@@ -1,0 +1,4 @@
+/Users/per/Documents/GitHub/BEAR/dot_coverage.py:298: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "papertype" which is no longer supported as of 3.3 and will become an error in 3.6
+  plt.savefig(write_file+'.pdf',
+/Users/per/Documents/GitHub/BEAR/dot_coverage.py:298: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "frameon" which is no longer supported as of 3.3 and will become an error in 3.6
+  plt.savefig(write_file+'.pdf',

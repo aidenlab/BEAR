@@ -1,0 +1,10 @@
+[M::mm_idx_gen::0.001*2.79] collected minimizers
+[M::mm_idx_gen::0.001*2.75] sorted minimizers
+[M::main::0.001*2.73] loaded/built the index for 1 target sequence(s)
+[M::mm_mapopt_update::0.001*2.60] mid_occ = 50
+[M::mm_idx_stat] kmer size: 19; skip: 19; is_hpc: 0; #seq: 1
+[M::mm_idx_stat::0.001*2.48] distinct minimizers: 3006 (100.00% are singletons); average occurrences: 1.000; average spacing: 9.948; total length: 29903
+[M::worker_pipeline::0.003*1.85] mapped 2 sequences
+[M::main] Version: 2.24-r1122
+[M::main] CMD: minimap2 -x asm5 /Users/per/Documents/GitHub/BEAR/betacoronaviruses/match/Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1/Wuhan_seafood_market_pneumonia_virus_isolate_Wuhan_Hu_1.fasta /Users/per/Documents/GitHub/BEAR/Library001/final/final.contigs.fa
+[M::main] Real time: 0.003 sec; CPU: 0.005 sec; Peak RSS: 0.004 GB

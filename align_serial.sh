@@ -63,8 +63,8 @@ BETACORONA_SMALL="${PIPELINE_DIR}/betacoronaviruses/close/*/*.fasta \
 MATCH_REF="${PIPELINE_DIR}/betacoronaviruses/match/*/*.fasta"
 MATCH_NAME=$(echo $MATCH_REF | sed 's:.*/::' | rev | cut -c7- | rev )
 
-export WORK_DIR=${TOP_DIR}/work
-export LOG_DIR=${TOP_DIR}/log
+export WORK_DIR=${TOP_DIR}/alignments
+export ASM_DIR=${TOP_DIR}/assembly
 export FINAL_DIR=${TOP_DIR}/final
 
 
@@ -137,7 +137,6 @@ command -v python >/dev/null 2>&1 || { echo >&2 "ʕ•ᴥ•ʔ < Error! Python r
 # Step 2: make sure folders created by pipeline do not already exist.
 if [[ "$forceOverwrite" -ne 1 && "$stage" != "assembly" && "$stage" != "plot" ]]; then
   if ! mkdir "${WORK_DIR}"; then echo "ʕ•ᴥ•ʔ < Error! Unable to create ${WORK_DIR}! Exiting.)"; exit 1; fi
-  if ! mkdir "${LOG_DIR}"; then echo "ʕ•ᴥ•ʔ < Error! Unable to create ${LOG_DIR}! Exiting.)"; exit 1; fi
   if ! mkdir "${FINAL_DIR}"; then echo "ʕ•ᴥ•ʔ < Error! Unable to create ${FINAL_DIR}! Exiting.)"; exit 1; fi
 fi 
 
@@ -222,13 +221,14 @@ if [[ "$stage" == "assembly" || "$stage" == "all" ]]; then
           read2filescomma=$(echo "${read2files[*]}" | sed 's/ /,/g;s/,$//')
 
           echo "ʕ•ᴥ•ʔ < Assembling contigs.)"
-          megahit -m 750 -1 $read1filescomma -2 $read2filescomma -o "${WORK_DIR}/contigs"   &> ${LOG_DIR}/contig.out
-          if [[ -f "${WORK_DIR}/contigs/done" ]]; then
-
-            mv "${WORK_DIR}/contigs/final.contigs.fa" ${FINAL_DIR}/.
+          if ! mkdir "${ASM_DIR}"; then echo "ʕ•ᴥ•ʔ < Error! Unable to create \"${ASM_DIR}!\" Exiting.)"; exit 1; fi
+          if ! mkdir "${ASM_DIR}/debug"; then echo "ʕ•ᴥ•ʔ < Error! Unable to create \"${ASM_DIR}/debug!\" Exiting.)"; exit 1; fi
+          megahit -m 750 -1 $read1filescomma -2 $read2filescomma -o "${ASM_DIR}/work" &> "${ASM_DIR}/debug/contig.out"
+          if [[ -f "${ASM_DIR}/work/done" ]]; then
+            mv "${ASM_DIR}/work/final.contigs.fa" ${FINAL_DIR}/.
             echo "ʕ•ᴥ•ʔ < Performing pairwise comparison)"
-            minimap2 -x asm5 $MATCH_REF "${FINAL_DIR}/final.contigs.fa" > "${WORK_DIR}/contigs/contig.paf" 2> "${LOG_DIR}/minimap.out"
-            if [[ ! -s "${WORK_DIR}/contigs/contig.paf" ]]; then
+            minimap2 -x asm5 $MATCH_REF "${FINAL_DIR}/final.contigs.fa" > "${ASM_DIR}/work/contig.paf" 2> "${ASM_DIR}/debug/paf.out"
+            if [[ ! -s "${ASM_DIR}/work/contig.paf" ]]; then
               echo "ʕ•ᴥ•ʔ < Error! Pairwise alignment by minimap2 failed.)"
             fi
           else
@@ -241,9 +241,14 @@ if [[ "$stage" == "assembly" || "$stage" == "all" ]]; then
 fi
 
 if [[ "$stage" == "plot" || "$stage" == "all" ]]; then
-    CONTIG_LENGTH=$(tail -n2 ${WORK_DIR}/contigs/log |grep -o 'total.*' | awk '{print $2}')
+    CONTIG_LENGTH=$(tail -n2 ${ASM_DIR}/work/log |grep -o 'total.*' | awk '{print $2}')
     python "${PIPELINE_DIR}/remove_strays.py" "${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base.txt" "${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt"
-    python "${PIPELINE_DIR}/dot_coverage.py" "${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt" "${WORK_DIR}/contigs/contig.paf" "${WORK_DIR}/stats.csv" $CONTIG_LENGTH "${FINAL_DIR}/report" &> "${LOG_DIR}/dotplot.out"
+    python "${PIPELINE_DIR}/dot_coverage.py" "${WORK_DIR}/${MATCH_NAME}/aligned/depth_per_base_without_primers_islands.txt" "${ASM_DIR}/work/contig.paf" "${WORK_DIR}/stats.csv" $CONTIG_LENGTH "${FINAL_DIR}/report" &> "${ASM_DIR}/debug/dotplot.out"
 fi
 
-echo "ʕ•ᴥ•ʔ < Pipeline completed, check \"${FINAL_DIR}\" for the report.)"
+if [[ -s "${FINAL_DIR}/report.pdf" ]]; then
+    echo "ʕ•ᴥ•ʔ < Pipeline completed, check \"${FINAL_DIR}\" for the report.)"
+else
+    echo "ʕ•ᴥ•ʔ < Error! Final report not created.)"
+fi
+
