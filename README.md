@@ -66,7 +66,7 @@ cd ./BEAR/test && ../align_serial.sh
 3. Run the provided test dataset to check instillation
 
 ```bash
-cd ./BEAR/test && ../align_serial.sh
+cd BEAR/Library001 && ../align_serial.sh
 ```      
 
 ## Install BEAR using Conda
