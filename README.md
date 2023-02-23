@@ -52,7 +52,7 @@ You can install the BEAR pipeline and all its dependencies manually.
 
 ```bash
 git clone https://github.com/aidenlab/BEAR.git
-cd ./BEAR/test && ../align_serial.sh
+cd ./BEAR/Library001 && ../align_serial.sh
 ``` 
 
 or
@@ -60,13 +60,13 @@ or
 ```bash
 curl -sSL -o BEAR.zip https://github.com/aidenlab/BEAR/archive/master.zip
 unzip BEAR.zip && mv BEAR-master BEAR && rm BEAR.zip
-cd ./BEAR/test && ../align_serial.sh
+cd ./BEAR/Library001 && ../align_serial.sh
 ``` 
 
 3. Run the provided test dataset to check instillation
 
 ```bash
-cd BEAR/Library001 && ../align_serial.sh
+cd ./BEAR/Library001 && ../align_serial.sh
 ```      
 
 ## Install BEAR using Conda
